@@ -17,8 +17,8 @@ const mainNavItems: NavItem[] = [
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
+        title: 'Roles',
+        href: '/roles',
         icon: Folder,
     },
     {

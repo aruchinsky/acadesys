@@ -6,6 +6,18 @@
 
 ---
 
+## 👤 Usuario por defecto (Superusuario)
+
+El proyecto incluye un usuario inicial con permisos de **superusuario** para acceder al sistema después de correr las migraciones/seeders:
+
+email: test@example.com
+
+password: password123
+
+> ⚠️ **Importante:** Se recomienda cambiar estas credenciales apenas montes el proyecto en un entorno real.
+
+---
+
 ## Requisitos previos
 
 * PHP ≥ 8.2

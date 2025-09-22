@@ -43,8 +43,14 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
+            //Este middleware auth, introduce el usuario autenticado en todas las vistas
             'auth' => [
                 'user' => $request->user(),
+                //Esto es de spatie/laravel-permission: getRoleNames() devuelve una coleccion con los roles del usuario
+                'roles' => $request->user()?->getRoleNames() ?? [],
+                //getAllPermissions() devuelve una coleccion con los permisos del usuario
+                // pluck('name') devuelve un array de string con los nombres de los permisos
+                'permissions' => $request->user()?->getAllPermissions()->pluck('name') ?? [],
             ],
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),

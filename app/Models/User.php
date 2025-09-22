@@ -6,11 +6,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    
+    // UN TRAIT ES DE PHP NATIVO Y PERMITE REUTILIZAR CODIGO EN DIFERENTES CLASES
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -21,6 +24,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'nombre',
+        'apellido',
+        'dni',
+        'telefono',
     ];
 
     /**
@@ -44,5 +51,47 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Obtiene las inscripciones del usuario
+     */
+    public function inscripciones()
+    {
+        return $this->hasMany(Inscripcion::class);
+    }
+
+    /**
+     * Obtiene los pagos realizados por el usuario
+     */
+    public function pagos()
+    {
+        return $this->hasMany(Pago::class);
+    }
+
+    /**
+     * Obtiene los pagos que el usuario ha procesado como administrativo
+     */
+    public function pagosAdministrados()
+    {
+        return $this->hasMany(Pago::class, 'administrativo_id');
+    }
+
+    /**
+     * Obtiene los cursos en los que está inscrito el usuario
+     */
+    public function cursos()
+    {
+        return $this->belongsToMany(Curso::class, 'inscripciones')
+                    ->withPivot(['estado', 'fecha_inscripcion', 'origen'])
+                    ->withTimestamps();
+    }
+
+    /**
+     * Obtiene el nombre completo del usuario
+     */
+    public function getNombreCompletoAttribute()
+    {
+        return "{$this->nombre} {$this->apellido}";
     }
 }

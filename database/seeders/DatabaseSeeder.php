@@ -18,6 +18,10 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'password' => 'password123', // password
         ]);
+
+        // Ejecuta el seeder de roles y permisos
+        $this->call(RolesAndPermissionsSeeder::class); 
     }
 }
