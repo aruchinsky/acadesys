@@ -3,18 +3,24 @@
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserRoleController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 // Controladores para las rutas
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    // Route::get('dashboard', function () {
+    //     return Inertia::render('dashboard');
+    // })->name('dashboard');
+
+    // Ruta para el dashboard, que redirige al controlador DashboardController
+    // El controlador decide que vista cargar segun el rol del usuario
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 });
 

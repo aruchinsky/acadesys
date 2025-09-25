@@ -80,62 +80,55 @@ export default function UserRolesPage() {
                     </div>
                 </div>
 
-                <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-                    <table className="min-w-full table-auto text-left text-sm">
-                        <thead className="bg-gray-100 dark:bg-gray-800">
-                            <tr>
-                                <th className="border-b border-gray-200 px-4 py-2 text-gray-700 dark:border-gray-700 dark:text-gray-200">ID</th>
-                                <th className="border-b border-gray-200 px-4 py-2 text-gray-700 dark:border-gray-700 dark:text-gray-200">Nombre Completo</th>
-                                <th className="border-b border-gray-200 px-4 py-2 text-gray-700 dark:border-gray-700 dark:text-gray-200">Email</th>
-                                <th className="border-b border-gray-200 px-4 py-2 text-gray-700 dark:border-gray-700 dark:text-gray-200">DNI</th>
-                                <th className="border-b border-gray-200 px-4 py-2 text-gray-700 dark:border-gray-700 dark:text-gray-200">Rol</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {usersList.length > 0 ? (
-                                usersList.map((user) => (
-                                    <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                        <td className="border-b border-gray-200 px-4 py-2 text-gray-800 dark:border-gray-700 dark:text-gray-100">
-                                            {user.id}
-                                        </td>
-                                        <td className="border-b border-gray-200 px-4 py-2 text-gray-800 dark:border-gray-700 dark:text-gray-100">
-                                            {user.name}
-                                        </td>
-                                        <td className="border-b border-gray-200 px-4 py-2 text-gray-800 dark:border-gray-700 dark:text-gray-100">
-                                            {user.email}
-                                        </td>
-                                        <td className="border-b border-gray-200 px-4 py-2 text-gray-800 dark:border-gray-700 dark:text-gray-100">
-                                            {user.dni}
-                                        </td>
-                                        <td className="border-b border-gray-200 px-4 py-2 text-gray-800 dark:border-gray-700 dark:text-gray-100">
-                                            <Select
-                                                value={data.roles[user.id]}
-                                                onValueChange={(value) => handleChange(user.id, value)}
-                                            >
-                                                <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Seleccionar rol" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {roleItems.map((role) => (
-                                                        <SelectItem key={role.name} value={role.name}>
-                                                            {role.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan={5} className="py-4 text-center text-gray-600 dark:text-gray-300">
-                                        No hay usuarios registrados.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+<div className="overflow-x-auto rounded-lg border border-[var(--border)]">
+  <table className="min-w-full table-auto text-left text-sm">
+    <thead className="bg-[var(--muted)] text-[var(--muted-foreground)]">
+      <tr>
+        <th className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">ID</th>
+        <th className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">Nombre Completo</th>
+        <th className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">Email</th>
+        <th className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">DNI</th>
+        <th className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">Rol</th>
+      </tr>
+    </thead>
+    <tbody>
+      {usersList.length > 0 ? (
+        usersList.map((user) => (
+          <tr key={user.id} className="hover:bg-[var(--accent)]">
+            <td className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">{user.id}</td>
+            <td className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">{user.name}</td>
+            <td className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">{user.email}</td>
+            <td className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">{user.dni}</td>
+            <td className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">
+              <Select
+                value={data.roles[user.id]}
+                onValueChange={(value) => handleChange(user.id, value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar rol" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roleItems.map((role) => (
+                    <SelectItem key={role.name} value={role.name}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </td>
+          </tr>
+        ))
+      ) : (
+        <tr>
+          <td colSpan={5} className="py-4 text-center text-[var(--muted-foreground)]">
+            No hay usuarios registrados.
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
+</div>
+
             </div>
         </AppLayout>
     );
