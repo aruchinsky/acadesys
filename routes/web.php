@@ -5,7 +5,7 @@ use App\Http\Controllers\UserRoleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 // Controladores para las rutas
-use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -16,9 +16,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-    Route::resource('usuarios', UsuarioController::class)->parameters([
-        'usuarios' => 'usuario'
-    ]);
+    // Route::resource('usuarios', UsuarioController::class)->parameters([
+    //     'usuarios' => 'usuario'
+    // ]);
     
     
 
@@ -34,8 +34,10 @@ Route::middleware(['auth', 'verified', 'role:superusuario'])->group(function () 
     Route::put('/roles/{role}', [RoleController::class, 'update'])->name('roles.update');
     Route::get('/roles/create', [RoleController::class, 'create'])->name('roles.create');
     //Permisos
-    Route::get('usuarios/roles', [UserRoleController::class, 'index'])->name('usuarios.roles.index');
-    Route::put('usuarios/{user}/roles', [UserRoleController::class, 'update'])->name('usuarios.roles.update');
+    Route::get('/users/roles', [UserRoleController::class, 'index'])->name('users.roles.index');
+    Route::put('/users/roles', [UserRoleController::class, 'update'])->name('users.roles.update');
+    
+    Route::resource('users', UserController::class);
 });
 
 require __DIR__.'/settings.php';

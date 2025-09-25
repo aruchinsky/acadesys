@@ -12,8 +12,14 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+interface IndexProps {
+  roles: Role[];
+  auth: pageProps['auth'];
+  [key: string]: unknown;
+}
+
 export default function Index() {
-    const { roles, auth } = usePage<pageProps>().props;
+    const { roles, auth } = usePage<IndexProps>().props;
 
     const handleDelete = (id: number) => {
         if (confirm('¿Estás seguro de que deseas eliminar este rol?')) {

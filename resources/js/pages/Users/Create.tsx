@@ -3,30 +3,38 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { pageProps, type BreadcrumbItem, Role } from '@/types';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Usuarios', href: '/usuarios' },
-    { title: 'Crear Usuario', href: '/usuarios/create' },
+    { title: 'Usuarios', href: '/users' },
+    { title: 'Crear Usuario', href: '/users/create' },
 ];
 
 export default function Create() {
+    const { roles } = usePage<pageProps>().props;
+
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         email: '',
-        nombre: '',
-        apellido: '',
         dni: '',
         telefono: '',
         password: '',
         password_confirmation: '',
+        role: '', // Ahora un único rol
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('usuarios.store'));
+        post(route('users.store'));
+    };
+
+    const handleCancel = () => {
+        if(data.name || data.email || data.dni || data.telefono || data.password || data.password_confirmation || data.role) {
+            if(!confirm('¿Estás seguro de que deseas cancelar? Se perderán los datos no guardados.')) return;
+        }
+        router.visit(route('users.index'));
     };
 
     return (
@@ -35,11 +43,9 @@ export default function Create() {
             <div className="flex flex-col gap-6 p-4">
                 {/* Encabezado con acciones */}
                 <div className="flex items-center justify-between">
-                    <Button variant="ghost" asChild>
-                        <Link href={route('usuarios.index')}>
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Volver a usuarios
-                        </Link>
+                    <Button variant="ghost" onClick={handleCancel}>
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Volver a usuarios
                     </Button>
                 </div>
 
@@ -51,28 +57,6 @@ export default function Create() {
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Información Personal */}
                             <div className="grid gap-4 md:grid-cols-2">
-                                <div className="space-y-2">
-                                    <Label htmlFor="nombre">Nombre</Label>
-                                    <Input
-                                        id="nombre"
-                                        type="text"
-                                        value={data.nombre}
-                                        onChange={(e) => setData('nombre', e.target.value)}
-                                    />
-                                    {errors.nombre && <p className="text-sm text-destructive">{errors.nombre}</p>}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="apellido">Apellido</Label>
-                                    <Input
-                                        id="apellido"
-                                        type="text"
-                                        value={data.apellido}
-                                        onChange={(e) => setData('apellido', e.target.value)}
-                                    />
-                                    {errors.apellido && <p className="text-sm text-destructive">{errors.apellido}</p>}
-                                </div>
-
                                 <div className="space-y-2">
                                     <Label htmlFor="dni">DNI</Label>
                                     <Input
@@ -152,10 +136,30 @@ export default function Create() {
                                 </div>
                             </div>
 
+                            {/* Roles */}
+                            <div className="space-y-4 rounded-lg border p-4">
+                                <h3 className="text-lg font-medium">Rol</h3>
+                                <div className="grid gap-2">
+                                    {roles && (roles as Role[]).map((role) => (
+                                        <label key={role.id} className="flex items-center gap-2">
+                                            <input
+                                                type="radio"
+                                                name="role"
+                                                value={role.name}
+                                                checked={data.role === role.name}
+                                                onChange={() => setData('role', role.name)}
+                                            />
+                                            {role.name}
+                                        </label>
+                                    ))}
+                                </div>
+                                {errors.role && <p className="text-sm text-destructive">{errors.role}</p>}
+                            </div>
+
                             {/* Botones de Acción */}
                             <div className="flex items-center justify-end gap-4">
-                                <Button type="button" variant="outline" asChild>
-                                    <Link href={route('usuarios.index')}>Cancelar</Link>
+                                <Button type="button" variant="outline" onClick={handleCancel}>
+                                    Cancelar
                                 </Button>
                                 <Button type="submit" disabled={processing}>
                                     {processing ? (

@@ -29,14 +29,36 @@ class RoleController extends Controller
 
     public function create(Request $request, Role $role)
     {
-        return Inertia::render('Roles/Create');
+        $permissions = Permission::all()->groupBy(function ($permission) {
+            return explode(' ', $permission->name)[1];
+        });
+
+        return Inertia::render('Roles/Create', [
+            'permissions' => $permissions,
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|unique:roles,name',
+            'permissions' => 'array',
+            'permissions.*' => 'string|exists:permissions,name',
+        ]);
+
+        $role = Role::create(['name' => $validated['name']]);
+        $role->syncPermissions($validated['permissions'] ?? []);
+
+        return redirect()
+                ->route('roles.index')
+                ->with('success', 'Rol creado correctamente.');
     }
 
     // Ingresa a ese rol
     public function edit(Role $role)
     {
         $permissions = Permission::all()->groupBy(function ($permission) {
-            return explode(' ', $permission->name)[1] ?? $permission->name;
+            return explode(' ', $permission->name)[1];
         });
 
         $rolePermissions = $role->permissions->pluck('name')->toArray();

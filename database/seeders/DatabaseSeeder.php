@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,15 +13,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Ejecuta el seeder de roles y permisos primero
+        $this->call(RolesAndPermissionsSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Test User',
+        // Crear usuario superusuario por defecto
+        $user = User::factory()->create([
+            'name' => 'Developer',
             'email' => 'test@example.com',
-            'password' => 'password123', // password
+            'password' => Hash::make('password123'), // clave segura hasheada
         ]);
 
-        // Ejecuta el seeder de roles y permisos
-        $this->call(RolesAndPermissionsSeeder::class); 
+        // Asignar rol superusuario (debe existir en RolesAndPermissionsSeeder)
+        $user->assignRole('superusuario');
     }
 }

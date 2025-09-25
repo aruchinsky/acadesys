@@ -127,8 +127,9 @@ export interface Role {
     guard_name: string;
     created_at: string;
     updated_at: string;
-    permissions_count: number;
+    permissions_count?: number;
     permissions?: Permission[];
+    [key: string]: unknown;
 }
 
 export interface Permission {
@@ -137,6 +138,16 @@ export interface Permission {
     guard_name: string;
     created_at: string;
     updated_at: string;
+}
+
+export interface UserWithRoles {
+    id: number;
+    name: string;
+    email: string;
+    dni: string;
+    telefono: string | null;
+    roles: {id: number, name: string}[] // Array de roles
+    [key: string]: unknown;
 }
 
 export interface Inscripcion {
@@ -221,9 +232,9 @@ export interface pageProps {
         permissions: string[];
     }
 
+    users: UserWithRoles[];
     usuarios: User[];
-    roles: Role[];
-    permisos: Permission[];
+    roles: Role[] | {id: number; name: string}[];
     inscripciones: Inscripcion[];
     cursos: Curso[];
     pagos: Pago[];

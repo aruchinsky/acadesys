@@ -16,27 +16,33 @@ class UserRoleController extends Controller
 
     public function index()
     {
-        $usuarios = User::with('roles')->get();
+        $users = User::with('roles')->get();
 
         $roles = Role::all();
 
-        return Inertia::render('Usuarios/Roles', [
-            'usuarios' => $usuarios,
+        return Inertia::render('Users/Roles', [
+            'users' => $users,
             'roles' => $roles,
         ]);
     }
 
-    public function update(Request $request, User $user)
+    public function update(Request $request)
     {
         $validated = $request->validate([
-            'roles' => 'array',
+            'roles' => 'required|array',
             'roles.*' => 'string|exists:roles,name',
         ]);
 
-        $user->syncRoles($validated['roles'] ?? []);
+        foreach ($validated['roles'] as $userId => $roleName) {
+            $user = User::find($userId);
+            if ($user){
+                $user->syncRoles([$roleName]); // Sincroniza los roles del usuario
+            }
+            
+        }
 
         return redirect()
-                ->route('usuarios.roles.index')
+                ->route('users.roles.index')
                 ->with('success', 'Roles del usuario actualizados correctamente.');
     }
 }
