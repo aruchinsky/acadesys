@@ -128,16 +128,6 @@ class UserController extends Controller
         $roles = Role::all();
 
         return Inertia::render('Users/Edit', [
-            // 'user'  => [
-            //     'id'       => $user->id,
-            //     'name'     => $user->name,
-            //     'email'    => $user->email,
-            //     'dni'      => $user->dni,
-            //     'telefono' => $user->telefono,
-            //     'roles'    => $user->roles->pluck('name'), // más cómodo para checkboxes
-            // ],
-            // 'roles' => $roles,
-
             'user'  => $user->load('roles'),
             'roles' => $roles,
         ]);

@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { Button} from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { pageProps, UserWithRoles, type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
@@ -10,6 +10,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/users',
     },
 ];
+
 
 export default function Index() {
     const { users, auth } = usePage<pageProps>().props;
@@ -24,7 +25,9 @@ export default function Index() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
+            
             <Head title="Usuarios" />
+
             <div className="flex flex-col gap-4 p-4">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Usuarios</h1>

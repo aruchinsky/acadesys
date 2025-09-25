@@ -1,9 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type Permission } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
@@ -13,7 +14,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 interface CreateProps {
-  permissions: Record<string, { id: number; name: string }[]>;
+  permissions: Record<string, Permission[]>;
 }
 
 export default function Create({ permissions }: CreateProps) {
@@ -22,14 +23,14 @@ export default function Create({ permissions }: CreateProps) {
     permissions: [] as string[],
   });
 
-  const handleToggle = (perm: string) => {
-    if (data.permissions.includes(perm)) {
+  const handleCheckboxChange = (permissionName: string, checked: boolean) => {
+    if (checked) {
+      setData('permissions', [...data.permissions, permissionName]);
+    } else {
       setData(
         'permissions',
-        data.permissions.filter((p) => p !== perm)
+        data.permissions.filter((p) => p !== permissionName)
       );
-    } else {
-      setData('permissions', [...data.permissions, perm]);
     }
   };
 
@@ -58,15 +59,15 @@ export default function Create({ permissions }: CreateProps) {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Nombre del rol */}
+              {/* Nombre del Rol */}
               <div className="space-y-2">
-                <Label htmlFor="name">Nombre del rol</Label>
-                <input
+                <Label htmlFor="name">Nombre del Rol</Label>
+                <Input
                   id="name"
                   type="text"
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                   value={data.name}
                   onChange={(e) => setData('name', e.target.value)}
+                  placeholder="Ej: superusuario, profesor, alumno"
                 />
                 {errors.name && (
                   <p className="text-sm text-destructive">{errors.name}</p>
@@ -81,27 +82,27 @@ export default function Create({ permissions }: CreateProps) {
                 </p>
 
                 <div className="grid gap-6 md:grid-cols-2">
-                  {Object.entries(permissions).map(([group, perms]) => (
-                    <div key={group} className="space-y-2">
-                      <h4 className="font-semibold capitalize">{group}</h4>
+                  {Object.entries(permissions).map(([entity, perms]) => (
+                    <div key={entity} className="space-y-2">
+                      <h4 className="font-semibold capitalize">{entity}</h4>
                       <div className="space-y-2 rounded-lg border p-3">
-                        {perms.map((perm) => (
+                        {perms.map((permission) => (
                           <div
-                            key={perm.id}
+                            key={permission.id}
                             className="flex items-center space-x-2"
                           >
                             <Checkbox
-                              id={`perm-${perm.id}`}
-                              checked={data.permissions.includes(perm.name)}
-                              onCheckedChange={() =>
-                                handleToggle(perm.name)
+                              id={`perm-${permission.id}`}
+                              checked={data.permissions.includes(permission.name)}
+                              onCheckedChange={(checked) =>
+                                handleCheckboxChange(permission.name, !!checked)
                               }
                             />
                             <Label
-                              htmlFor={`perm-${perm.id}`}
+                              htmlFor={`perm-${permission.id}`}
                               className="text-sm"
                             >
-                              {perm.name}
+                              {permission.name}
                             </Label>
                           </div>
                         ))}
@@ -110,9 +111,7 @@ export default function Create({ permissions }: CreateProps) {
                   ))}
                 </div>
                 {errors.permissions && (
-                  <p className="text-sm text-destructive">
-                    {errors.permissions}
-                  </p>
+                  <p className="text-sm text-destructive">{errors.permissions}</p>
                 )}
               </div>
 

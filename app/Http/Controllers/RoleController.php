@@ -47,7 +47,10 @@ class RoleController extends Controller
         ]);
 
         $role = Role::create(['name' => $validated['name']]);
-        $role->syncPermissions($validated['permissions'] ?? []);
+
+        if(!empty($validated['permissions'])) {
+            $role->syncPermissions($validated['permissions']);
+        }
 
         return redirect()
                 ->route('roles.index')

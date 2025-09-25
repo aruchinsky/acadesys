@@ -25,17 +25,6 @@ export default function Edit({ role, permissions, rolePermissions }: EditProps) 
         permissions: rolePermissions,
     });
 
-    const handleToggle = (perm: string) => {
-        if (data.permissions.includes(perm)) {
-            setData(
-                'permissions',
-                data.permissions.filter((p) => p !== perm)
-            );
-        } else {
-            setData('permissions', [...data.permissions, perm]);
-        }
-    };
-
     const handleCheckboxChange = (permissionName: string, checked: boolean) => {
         if (checked) {
             setData('permissions', [...data.permissions, permissionName]);
