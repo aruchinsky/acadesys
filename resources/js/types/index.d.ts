@@ -125,6 +125,7 @@ export interface Role {
     id: number;
     name: string;
     guard_name: string;
+    users_count: number;
     created_at: string;
     updated_at: string;
     permissions_count?: number;
@@ -215,7 +216,13 @@ export interface CursoHorario {
     curso?: Curso;
 }
 
-//Interfaces para el proyecto
+export interface DashboardData {
+    totalCursos: number;
+    totalPagos: number;
+    ingresos: number;
+    cursosPorCategoria: Record<string, number>;
+}
+
 export interface pageProps {
     flash: {
         success?: string;
@@ -223,14 +230,15 @@ export interface pageProps {
         warning?: string;
         info?: string;
     };
-
     [key: string]: unknown;
-    //roles y permisos
+
     auth?: {
         user?: User;
         roles: string[];
         permissions: string[];
-    }
+    };
+
+    dashboard?: DashboardData;
 
     users: UserWithRoles[];
     usuarios: User[];

@@ -12,11 +12,6 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('role:superusuario');
-    }
-
     /**
      * Listado de usuarios
      */
@@ -34,9 +29,10 @@ class UserController extends Controller
                 ]),
             ];
         });
-
+        $roles = Role::all();
         return Inertia::render('Users/Index', [
             'users' => $users,
+            'roles' => $roles,
         ]);
     }
 
@@ -116,6 +112,10 @@ class UserController extends Controller
                     'pagado_at'   => $pago->pagado_at->format('d/m/Y'),
                     'metodo_pago' => $pago->metodo_pago,
                 ]),
+                'cursos_dictados' => $user->cursosDictados->map(fn($curso) => [
+                    'id' => $curso->id,
+                    'nombre' => $curso->nombre,
+                ]),
             ],
         ]);
     }
@@ -159,6 +159,26 @@ class UserController extends Controller
                 ->back()
                 ->with('error', 'Error al actualizar el usuario: ' . $e->getMessage());
         }
+    }
+
+    public function update_rol(Request $request)
+    {
+        $validated = $request->validate([
+            'roles' => 'required|array',
+            'roles.*' => 'string|exists:roles,name',
+        ]);
+
+        foreach ($validated['roles'] as $userId => $roleName) {
+            $user = User::find($userId);
+            if ($user){
+                $user->syncRoles([$roleName]); // Sincroniza los roles del usuario
+            }
+            
+        }
+
+        return redirect()
+                ->route('users.index')
+                ->with('success', 'Roles del usuario actualizados correctamente.');
     }
 
     /**

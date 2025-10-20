@@ -46,4 +46,14 @@ class Curso extends Model
     {
         return $this->hasMany(CursoHorario::class);
     }
+
+    /**
+     * Profesores asignados al curso
+     */
+    public function profesores()
+    {
+        return $this->belongsToMany(User::class, 'curso_profesor', 'curso_id', 'profesor_id')
+                    ->withTimestamps();
+    }
+
 }

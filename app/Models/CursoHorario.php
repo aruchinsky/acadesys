@@ -11,19 +11,16 @@ class CursoHorario extends Model
 
     protected $fillable = [
         'curso_id',
-        'dia_semana',
+        'dia_en_texto',
         'hora_inicio',
-        'hora_fin'
+        'duracion_min',
+        'sala',
     ];
 
     protected $casts = [
-        'hora_inicio' => 'datetime',
-        'hora_fin' => 'datetime'
+        'hora_inicio' => 'datetime:H:i',
     ];
 
-    /**
-     * Obtiene el curso al que pertenece el horario
-     */
     public function curso()
     {
         return $this->belongsTo(Curso::class);

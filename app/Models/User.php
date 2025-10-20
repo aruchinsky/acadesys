@@ -15,6 +15,8 @@ class User extends Authenticatable
     // UN TRAIT ES DE PHP NATIVO Y PERMITE REUTILIZAR CODIGO EN DIFERENTES CLASES
     use HasFactory, Notifiable, HasRoles;
 
+    protected $guard_name = 'web';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -88,10 +90,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Cursos que el usuario dicta como profesor
+     */
+    public function cursosDictados()
+    {
+        return $this->belongsToMany(Curso::class, 'curso_profesor', 'profesor_id', 'curso_id')
+                    ->withTimestamps();
+    }
+
+
+    /**
      * Obtiene el nombre completo del usuario
      */
     public function getNombreCompletoAttribute()
     {
-        return "{$this->nombre} {$this->apellido}";
+        return trim("{$this->nombre} {$this->apellido}") ?: $this->name;
     }
+
+
 }

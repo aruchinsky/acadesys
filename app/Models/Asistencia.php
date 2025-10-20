@@ -33,13 +33,7 @@ class Asistencia extends Model
      */
     public function usuario()
     {
-        return $this->hasOneThrough(
-            User::class,
-            Inscripcion::class,
-            'id', // Clave foránea en inscripciones
-            'id', // Clave primaria en users
-            'inscripcion_id', // Clave foránea en asistencias
-            'user_id' // Clave foránea en inscripciones
-        );
+        return $this->inscripcion->usuario();
     }
+
 }

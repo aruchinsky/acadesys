@@ -44,9 +44,8 @@ export default function Index() {
       <tr>
         <th className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">ID</th>
         <th className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">Nombre</th>
-        <th className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">Guard</th>
+        <th className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">Usuarios Asignados</th>
         <th className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">Permisos</th>
-        <th className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">Fecha Alta</th>
         <th className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">Acciones</th>
       </tr>
     </thead>
@@ -56,9 +55,8 @@ export default function Index() {
           <tr key={role.id} className="hover:bg-[var(--accent)]">
             <td className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">{role.id}</td>
             <td className="border-b border-[var(--border)] px-4 py-2 font-medium text-[var(--foreground)]">{role.name}</td>
-            <td className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">{role.guard_name}</td>
+            <td className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">{role.users_count}</td>
             <td className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">{role.permissions_count}</td>
-            <td className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">{role.created_at}</td>
             <td className="border-b border-[var(--border)] px-4 py-2">
               <div className="flex gap-2">
                 <Link href={route('roles.edit', role.id)}>

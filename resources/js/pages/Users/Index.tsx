@@ -1,8 +1,16 @@
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
-import { pageProps, UserWithRoles, type BreadcrumbItem } from '@/types';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { pageProps, Role, UserWithRoles, type BreadcrumbItem } from '@/types';
+import { Head, Link, router, usePage, useForm } from '@inertiajs/react';
 import { Pencil, Trash2 } from 'lucide-react';
+
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -12,13 +20,38 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Index() {
-  const { users, auth } = usePage<pageProps>().props;
+  const { users, roles } = usePage<pageProps>().props;
   const usersList: UserWithRoles[] = Array.isArray(users) ? users : [];
+  const roleItems: Role[] = roles as Role[];
 
   const handleDelete = (id: number) => {
     if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
       router.delete(route('users.destroy', id));
     }
+  };
+
+  const initialRoles: Record<number, string> = {};
+  usersList.forEach((user) => {
+    initialRoles[user.id] = user.roles?.[0]?.name || '';
+  });
+
+  const { data, setData, put, processing } = useForm<{roles: Record<number, string>}>({
+      roles: initialRoles,
+  });
+
+  const handleChange = (userId: number, role: string) => {
+      setData('roles', { 
+          ...data.roles, 
+          [userId]: role,
+      });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      put(route('users.update_rol'), {
+          preserveScroll: true,
+          preserveState: true,
+      });
   };
 
   return (
@@ -30,6 +63,12 @@ export default function Index() {
           <h1 className="text-2xl font-bold text-[var(--foreground)]">Usuarios</h1>
           <Button asChild>
             <Link href={route('users.create')}>Crear Usuario</Link>
+          </Button>
+          <Button
+              onClick={handleSubmit}
+              disabled={processing}
+          >
+              Confirmar Cambios de Roles
           </Button>
         </div>
 
@@ -61,9 +100,21 @@ export default function Index() {
                     <td className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">{user.email}</td>
                     <td className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">{user.dni}</td>
                     <td className="border-b border-[var(--border)] px-4 py-2 text-[var(--foreground)]">
-                      {user.roles && user.roles.length > 0
-                        ? user.roles.map((r) => r.name).join(', ')
-                        : 'Sin rol'}
+                      <Select
+                        value={data.roles[user.id]}
+                        onValueChange={(value) => handleChange(user.id, value)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Seleccionar rol" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {roleItems.map((role) => (
+                            <SelectItem key={role.name} value={role.name}>
+                              {role.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </td>
                     <td className="border-b border-[var(--border)] px-4 py-2">
                       <div className="flex gap-2">

@@ -9,11 +9,6 @@ use Spatie\Permission\Models\Role;
 
 class UserRoleController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('role:superusuario');
-    }
-
     public function index()
     {
         $users = User::with('roles')->get();

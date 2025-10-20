@@ -9,18 +9,16 @@ use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('role:superusuario');
-    }
-
     // Muestra todos los roles
     public function index()
     {
         // Usamos withCount con alias para devolver 'permission_count' (coincide con tu index.d.ts)
-        $roles = Role::withCount(['permissions as permissions_count'])
-                     ->orderBy('id', 'asc')
-                     ->get();
+        $roles = Role::withCount([
+                'permissions as permissions_count',
+                'users as users_count'
+            ])
+            ->orderBy('id', 'asc')
+            ->get();
 
         return Inertia::render('Roles/Index', [
             'roles' => $roles,
@@ -46,7 +44,11 @@ class RoleController extends Controller
             'permissions.*' => 'string|exists:permissions,name',
         ]);
 
-        $role = Role::create(['name' => $validated['name']]);
+        $role = Role::create([
+            'name' => $validated['name'],
+            'guard_name' => 'web',
+        ]);
+
 
         if(!empty($validated['permissions'])) {
             $role->syncPermissions($validated['permissions']);
