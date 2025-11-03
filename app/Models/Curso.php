@@ -48,8 +48,9 @@ class Curso extends Model
      */
     public function horarios()
     {
-        return $this->hasMany(CursoHorario::class);
+        return $this->hasMany(CursoHorario::class, 'curso_id');
     }
+
 
     /**
      * Profesores asignados al curso
@@ -59,5 +60,20 @@ class Curso extends Model
         return $this->belongsToMany(User::class, 'curso_profesor', 'curso_id', 'profesor_id')
                     ->withTimestamps();
     }
+
+    public function scopeActivos($query) {
+        return $query->where('activo', true);
+    }
+
+    public function scopePorModalidad($query, $modalidad) {
+        return $query->where('modalidad', $modalidad);
+    }
+
+    public function getInscriptosCountAttribute()
+    {
+        return $this->inscripciones()->count();
+    }
+
+
 
 }

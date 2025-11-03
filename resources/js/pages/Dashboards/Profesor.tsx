@@ -10,7 +10,7 @@ export default function Profesor() {
   const { auth } = usePage<SharedData>().props
   const user = auth.user
   const opciones = [
-    { titulo: "Mis Cursos", descripcion: "Gestioná tus clases y alumnos.", icono: BookOpen, href: route("cursos.index") },
+    { titulo: "Mis Cursos", descripcion: "Gestioná tus clases y alumnos.", icono: BookOpen, href: route("profesor.cursos.index") },
     { titulo: "Asistencias", descripcion: "Registrá la asistencia diaria.", icono: ClipboardList, href: route("asistencias.index") },
     { titulo: "Pagos", descripcion: "Consultá pagos de tus cursos.", icono: FileText, href: route("pagos.index") },
   ]
@@ -32,7 +32,7 @@ export default function Profesor() {
         className="rounded-xl border border-border shadow-sm p-6 bg-gradient-to-br from-primary/10 via-background to-secondary/10 mx-2 sm:mx-4 md:mx-8"
       >
         <h1 className="text-2xl font-semibold flex items-center gap-2 text-foreground">
-          <GraduationCap className="h-6 w-6 text-primary" /> ¡Hola, {user.name}!
+          <GraduationCap className="h-6 w-6 text-primary" /> ¡Hola, {user?.nombre_completo}!
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
           Este es tu espacio docente: gestioná alumnos, clases y asistencias.

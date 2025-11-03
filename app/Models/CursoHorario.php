@@ -18,9 +18,7 @@ class CursoHorario extends Model
         'turno'
     ];
 
-    protected $casts = [
-        'hora_inicio' => 'time',
-    ];
+    protected $casts = [];
 
     public function curso()
     {

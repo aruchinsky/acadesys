@@ -1,14 +1,5 @@
 <?php
 
-// ============================================================
-// 🧹 COMANDOS ÚTILES DE MANTENIMIENTO
-// ============================================================
-// php artisan cache:clear
-// php artisan permission:cache-reset
-// php artisan route:clear
-// php artisan optimize:clear
-
-
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -22,7 +13,6 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserRoleController;
 
-
 // ============================================================
 // 🌐 PÁGINA PRINCIPAL PÚBLICA
 // ============================================================
@@ -30,7 +20,6 @@ use App\Http\Controllers\UserRoleController;
 Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
-
 
 // ============================================================
 // 🔒 ÁREA AUTENTICADA
@@ -42,16 +31,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
-
     // ============================================================
-    // 📘 MÓDULOS ACADÉMICOS
+    // 📘 MÓDULOS ACADÉMICOS (ADMINISTRATIVOS / SUPERUSUARIO)
     // ============================================================
 
     // --- Cursos ---
     Route::resource('cursos', CursoController::class)
         ->parameters(['cursos' => 'curso'])
-        ->except(['show'])
-        ->middleware('role:superusuario|administrativo|profesor');
+        ->middleware('role:superusuario|administrativo');
 
     // --- Inscripciones ---
     Route::resource('inscripciones', InscripcionController::class)
@@ -68,30 +55,43 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->parameters(['asistencias' => 'asistencia'])
         ->middleware('role:superusuario|administrativo|profesor|alumno');
 
+    // ============================================================
+    // 👨‍🏫 ÁREA PROFESOR
+    // ============================================================
+
+    Route::middleware('role:superusuario|profesor')->group(function () {
+        // Mis cursos asignados
+        Route::get('/profesor/cursos', [CursoController::class, 'indexProfesor'])
+            ->name('profesor.cursos.index');
+
+        Route::get('/profesor/cursos/{curso}', [CursoController::class, 'showProfesor'])
+            ->name('profesor.cursos.show');
+
+        // Asistencias del profesor
+        Route::get('/profesor/asistencias', [AsistenciaController::class, 'index'])
+            ->name('profesor.asistencias.index');
+
+        Route::get('profesor/cursos/{curso}/asistencias', [AsistenciaController::class, 'historial'])
+            ->name('profesor.asistencias.historial');
+    });
 
     // ============================================================
-    // 👩‍🏫 ÁREAS POR ROL (Dashboards y vistas específicas)
+    // 🎓 ÁREA ALUMNO
     // ============================================================
 
-    // --- Alumnos ---
     Route::middleware('role:superusuario|alumno')->group(function () {
-        Route::get('/mis-cursos', [InscripcionController::class, 'index'])
+        Route::get('/alumno/cursos', [InscripcionController::class, 'index'])
             ->name('alumno.cursos.index');
-        Route::get('/mis-pagos', [PagoController::class, 'index'])
+        Route::get('/alumno/pagos', [PagoController::class, 'index'])
             ->name('alumno.pagos.index');
-        Route::get('/mis-asistencias', [AsistenciaController::class, 'index'])
+        Route::get('/alumno/asistencias', [AsistenciaController::class, 'index'])
             ->name('alumno.asistencias.index');
     });
 
-    // --- Profesores ---
-    Route::middleware('role:superusuario|profesor')->group(function () {
-        Route::get('/profesor/cursos', [CursoController::class, 'index'])
-            ->name('profesor.cursos.index');
-        Route::get('/profesor/asistencias', [AsistenciaController::class, 'index'])
-            ->name('profesor.asistencias.index');
-    });
+    // ============================================================
+    // 🧑‍💼 ÁREA ADMINISTRATIVO
+    // ============================================================
 
-    // --- Administrativos ---
     Route::middleware('role:superusuario|administrativo')->group(function () {
         Route::get('/administrativo/pagos', [PagoController::class, 'index'])
             ->name('administrativo.pagos.index');
@@ -100,9 +100,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
-
 // ============================================================
-// ⚙️ ÁREA DE ADMINISTRACIÓN AVANZADA (solo adminsistema)
+// ⚙️ ÁREA DE ADMINISTRACIÓN AVANZADA (solo superusuario)
 // ============================================================
 
 Route::middleware(['auth', 'verified', 'role:superusuario'])->group(function () {
@@ -122,7 +121,6 @@ Route::middleware(['auth', 'verified', 'role:superusuario'])->group(function () 
     Route::resource('usuarios', UserController::class)
         ->parameters(['usuarios' => 'usuario']);
 });
-
 
 // ============================================================
 // 🧭 CONFIGURACIONES Y AUTENTICACIÓN

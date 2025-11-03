@@ -32,6 +32,9 @@ class User extends Authenticatable
         'telefono',
     ];
 
+    protected $appends = ['nombre_completo'];
+
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -99,13 +102,16 @@ class User extends Authenticatable
     }
 
 
+
     /**
-     * Obtiene el nombre completo del usuario
+     * Devuelve el nombre completo del usuario
      */
-    public function getNombreCompletoAttribute()
+    public function getNombreCompletoAttribute(): string
     {
-        return trim("{$this->nombre} {$this->apellido}") ?: $this->name;
+        return trim("{$this->nombre} {$this->apellido}");
     }
+
+
 
 
 }

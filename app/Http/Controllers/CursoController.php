@@ -6,16 +6,31 @@ use App\Models\Curso;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class CursoController extends Controller
 {
     public function index()
     {
-        $cursos = Curso::with(['profesores', 'horarios'])->get();
+        $cursos = Curso::with(['profesores'])
+            ->withCount('inscripciones')
+            ->get();
 
         return Inertia::render('Cursos/Index', [
             'cursos' => $cursos,
         ]);
+    }
+
+
+    public function show(Curso $curso)
+    {
+        $curso->load([
+            'profesores:id,nombre,apellido',
+            'horarios',
+            'inscripciones.usuario:id,nombre,apellido'
+        ]);
+
+        return Inertia::render('Cursos/Show', ['curso' => $curso]);
     }
 
     public function create()
@@ -39,12 +54,26 @@ class CursoController extends Controller
             'activo'        => 'boolean',
             'profesores'    => 'array',
             'profesores.*'  => 'exists:users,id',
+            'horarios'      => 'array',
+            'horarios.*.dia_en_texto' => 'nullable|string|max:20',
+            'horarios.*.hora_inicio'  => 'nullable|string|max:10',
+            'horarios.*.duracion_min' => 'nullable|integer|min:0',
+            'horarios.*.sala'         => 'nullable|string|max:50',
+            'horarios.*.turno'        => 'nullable|string|max:20',
         ]);
 
         $curso = Curso::create($validated);
 
+        // Asignar profesores
         if (!empty($validated['profesores'])) {
             $curso->profesores()->sync($validated['profesores']);
+        }
+
+        // Crear horarios
+        if (!empty($validated['horarios'])) {
+            foreach ($validated['horarios'] as $horario) {
+                $curso->horarios()->create($horario);
+            }
         }
 
         return redirect()->route('cursos.index')
@@ -71,12 +100,28 @@ class CursoController extends Controller
             'activo'        => 'boolean',
             'profesores'    => 'array',
             'profesores.*'  => 'exists:users,id',
+            'horarios'      => 'array',
+            'horarios.*.dia_en_texto' => 'nullable|string|max:20',
+            'horarios.*.hora_inicio'  => 'nullable|string|max:10',
+            'horarios.*.duracion_min' => 'nullable|integer|min:0',
+            'horarios.*.sala'         => 'nullable|string|max:50',
+            'horarios.*.turno'        => 'nullable|string|max:20',
         ]);
 
         $curso->update($validated);
+
+        // Actualizar profesores
         $curso->profesores()->sync($validated['profesores'] ?? []);
 
-        return redirect()->route('cursos.index')
+        // Actualizar horarios (eliminamos los viejos y guardamos los nuevos)
+        $curso->horarios()->delete();
+        if (!empty($validated['horarios'])) {
+            foreach ($validated['horarios'] as $horario) {
+                $curso->horarios()->create($horario);
+            }
+        }
+
+        return redirect()->route('cursos.show', $curso)
             ->with('success', 'Curso actualizado correctamente.');
     }
 
@@ -87,4 +132,33 @@ class CursoController extends Controller
         return redirect()->route('cursos.index')
             ->with('success', 'Curso eliminado correctamente.');
     }
+
+    public function indexProfesor()
+    {
+        $user = Auth::user();
+
+        // Traer solo los cursos donde el profesor está asignado
+        $cursos = $user->cursosDictados()
+            ->with(['horarios', 'inscripciones'])
+            ->withCount('inscripciones')
+            ->orderBy('fecha_inicio', 'asc')
+            ->get();
+
+        return Inertia::render('Cursos/ProfesorIndex', [
+            'cursos' => $cursos,
+        ]);
+    }
+
+    public function showProfesor(Curso $curso)
+    {
+        $curso->load([
+            'horarios',
+            'inscripciones.usuario:id,nombre,apellido,dni',
+        ]);
+
+        return Inertia::render('Cursos/ProfesorShow', [
+            'curso' => $curso,
+        ]);
+    }
+
 }

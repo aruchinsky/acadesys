@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Curso;
 use App\Models\Inscripcion;
@@ -19,21 +18,43 @@ class AcadeSysDemoSeeder extends Seeder
         DB::transaction(function () {
 
             // =====================================================
-            // 🧍‍♂️ USUARIOS BASE
+            // 🧍‍♂️ USUARIOS BASE (Superusuario, Administrativo, Profesor, Alumno)
             // =====================================================
 
             $usuariosBase = [
-                ['name' => 'Superusuario', 'email' => 'super@acadesys.test', 'role' => 'superusuario'],
-                ['name' => 'Administrativo', 'email' => 'admin@acadesys.test', 'role' => 'administrativo'],
-                ['name' => 'Profesor Demo', 'email' => 'profesor@acadesys.test', 'role' => 'profesor'],
-                ['name' => 'Alumno Demo', 'email' => 'alumno@acadesys.test', 'role' => 'alumno'],
+                [
+                    'nombre' => 'Iván Andrés',
+                    'apellido' => 'Ruchinsky',
+                    'email' => 'super@acadesys.test',
+                    'role' => 'superusuario',
+                ],
+                [
+                    'nombre' => 'María',
+                    'apellido' => 'López',
+                    'email' => 'admin@acadesys.test',
+                    'role' => 'administrativo',
+                ],
+                [
+                    'nombre' => 'Carlos',
+                    'apellido' => 'Pérez',
+                    'email' => 'profesor@acadesys.test',
+                    'role' => 'profesor',
+                ],
+                [
+                    'nombre' => 'Lucía',
+                    'apellido' => 'Gómez',
+                    'email' => 'alumno@acadesys.test',
+                    'role' => 'alumno',
+                ],
             ];
 
             foreach ($usuariosBase as $data) {
                 $user = User::firstOrCreate(
                     ['email' => $data['email']],
                     [
-                        'name' => $data['name'],
+                        'nombre' => $data['nombre'],
+                        'apellido' => $data['apellido'],
+                        'name' => "{$data['nombre']} {$data['apellido']}",
                         'password' => Hash::make('password123'),
                         'dni' => fake()->unique()->numerify('########'),
                         'telefono' => fake()->phoneNumber(),
@@ -42,13 +63,21 @@ class AcadeSysDemoSeeder extends Seeder
                 $user->assignRole($data['role']);
             }
 
-            // Profesores adicionales
+            // =====================================================
+            // 👨‍🏫 PROFESORES ADICIONALES
+            // =====================================================
+
             $profesores = collect();
             for ($i = 1; $i <= 4; $i++) {
+                $nombre = fake()->firstName('male');
+                $apellido = fake()->lastName();
+
                 $prof = User::firstOrCreate(
                     ['email' => "profesor$i@acadesys.test"],
                     [
-                        'name' => "Profesor $i",
+                        'nombre' => $nombre,
+                        'apellido' => $apellido,
+                        'name' => "$nombre $apellido",
                         'password' => Hash::make('password123'),
                         'dni' => fake()->unique()->numerify('########'),
                         'telefono' => fake()->phoneNumber(),
@@ -58,13 +87,21 @@ class AcadeSysDemoSeeder extends Seeder
                 $profesores->push($prof);
             }
 
-            // Alumnos adicionales
+            // =====================================================
+            // 🎓 ALUMNOS ADICIONALES
+            // =====================================================
+
             $alumnos = collect();
             for ($i = 1; $i <= 10; $i++) {
+                $nombre = fake()->firstName();
+                $apellido = fake()->lastName();
+
                 $alumno = User::firstOrCreate(
                     ['email' => "alumno$i@acadesys.test"],
                     [
-                        'name' => "Alumno $i",
+                        'nombre' => $nombre,
+                        'apellido' => $apellido,
+                        'name' => "$nombre $apellido",
                         'password' => Hash::make('password123'),
                         'dni' => fake()->unique()->numerify('########'),
                         'telefono' => fake()->phoneNumber(),
@@ -75,7 +112,7 @@ class AcadeSysDemoSeeder extends Seeder
             }
 
             // =====================================================
-            // 🎓 CURSOS Y PROFESORES
+            // 📘 CURSOS Y PROFESORES
             // =====================================================
 
             $cursosData = [
@@ -112,6 +149,7 @@ class AcadeSysDemoSeeder extends Seeder
                     $cursoData
                 );
 
+                // Asignar 1 o 2 profesores al curso
                 $curso->profesores()->syncWithoutDetaching(
                     $profesores->random(rand(1, 2))->pluck('id')->toArray()
                 );
@@ -124,7 +162,6 @@ class AcadeSysDemoSeeder extends Seeder
             // =====================================================
 
             foreach ($cursos as $curso) {
-                // Seleccionar alumnos aleatorios para inscribirse
                 $inscriptos = $alumnos->random(rand(4, 8));
 
                 foreach ($inscriptos as $alumno) {
@@ -154,18 +191,21 @@ class AcadeSysDemoSeeder extends Seeder
                     // ASISTENCIAS
                     $numClases = rand(5, 10);
                     for ($i = 0; $i < $numClases; $i++) {
-                        Asistencia::firstOrCreate([
-                            'inscripcion_id' => $inscripcion->id,
-                            'fecha' => now()->subDays(rand(1, 20))->format('Y-m-d'),
-                        ], [
-                            'presente' => fake()->boolean(80),
-                            'observacion' => fake()->optional()->sentence(3),
-                        ]);
+                        Asistencia::firstOrCreate(
+                            [
+                                'inscripcion_id' => $inscripcion->id,
+                                'fecha' => now()->subDays(rand(1, 20))->format('Y-m-d'),
+                            ],
+                            [
+                                'presente' => fake()->boolean(80),
+                                'observacion' => fake()->optional()->sentence(3),
+                            ]
+                        );
                     }
                 }
             }
 
-            $this->command->info('✅ Sistema AcadeSys poblado correctamente con datos de ejemplo.');
+            $this->command->info('✅ Sistema AcadeSys poblado correctamente con datos completos de ejemplo.');
         });
     }
 }

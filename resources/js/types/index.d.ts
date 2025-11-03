@@ -91,6 +91,10 @@ export interface Curso {
   descripcion: string | null
   fecha_inicio: string | null
   fecha_fin: string | null
+  arancel_base: number
+  modalidad: "Presencial" | "Virtual"
+  activo: boolean
+  inscripciones_count?: number
   created_at: string
   updated_at: string
 
@@ -98,7 +102,9 @@ export interface Curso {
   usuarios?: User[]
   inscripciones?: Inscripcion[]
   horarios?: CursoHorario[]
+  profesores?: User[]
 }
+
 
 // --------------------- INSCRIPCIONES ---------------------
 export interface Inscripcion {
@@ -148,19 +154,23 @@ export interface Asistencia {
   // Relaciones
   inscripcion?: Inscripcion
   usuario?: User
+  observacion?: string
 }
 
 // --------------------- HORARIOS DE CURSOS ---------------------
 export interface CursoHorario {
   id: number
   curso_id: number
-  dia_semana: number
-  hora_inicio: string
-  hora_fin: string
+  dia_en_texto: string | null
+  hora_inicio: string | null
+  duracion_min: number | null
+  sala: string | null
+  turno: "Mañana" | "Tarde" | "Noche" | null
   created_at: string
   updated_at: string
   curso?: Curso
 }
+
 
 // ============================================================
 // ⚙️ ROLES Y PERMISOS (Spatie)

@@ -20,10 +20,8 @@ import {
   BookOpen,
   ClipboardList,
   CheckCircle2,
-  GraduationCap,
   Settings2,
   BarChart3,
-  Layers,
   Home,
 } from "lucide-react"
 import AppLogo from "./app-logo"
@@ -78,8 +76,8 @@ export function AppSidebar() {
   // ============================================================
   if (rol === "profesor") {
     mainNavItems.push(
-      { title: "Mis Cursos", href: route("cursos.index"), icon: BookOpen },
-      { title: "Asistencias", href: route("asistencias.index"), icon: ClipboardList },
+      { title: "Mis Cursos", href: route("profesor.cursos.index"), icon: BookOpen },
+      { title: "Asistencias", href: route("profesor.asistencias.index"), icon: ClipboardList },
       { title: "Pagos", href: route("pagos.index"), icon: Wallet },
     )
   }
@@ -89,9 +87,9 @@ export function AppSidebar() {
   // ============================================================
   if (rol === "alumno") {
     mainNavItems.push(
-      { title: "Mis Cursos", href: route("inscripciones.index"), icon: BookOpen },
-      { title: "Pagos", href: route("pagos.index"), icon: Wallet },
-      { title: "Asistencias", href: route("asistencias.index"), icon: ClipboardList },
+      { title: "Mis Cursos", href: route("alumno.cursos.index"), icon: BookOpen },
+      { title: "Pagos", href: route("alumno.pagos.index"), icon: Wallet },
+      { title: "Asistencias", href: route("alumno.asistencias.index"), icon: ClipboardList },
     )
   }
 

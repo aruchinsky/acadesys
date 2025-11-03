@@ -63,3 +63,17 @@ export function formatHoraLocal(horaStr: string): string {
     return horaStr;
   }
 }
+
+export function formatFechaSinOffset(fechaStr: string): string {
+  if (!fechaStr) return "—";
+  try {
+    const date = new Date(fechaStr);
+    return date.toLocaleDateString("es-AR", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  } catch {
+    return "—";
+  }
+}

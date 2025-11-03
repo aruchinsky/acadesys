@@ -1,156 +1,240 @@
-# Puesta en marcha del proyecto
+# 🎓 AcadeSys – Sistema de Gestión Académica
 
-**Stack:** Laravel 12 + Inertia + React 19 (Starter Kit)
-
-> **Nota de arquitectura:** Este proyecto sigue la nueva metodología de Laravel 12 **sin `Kernel.php`**. Las rutas viven en `routes/web.php` y los props/compartidos de Inertia se gestionan en `app/Http/Middleware/HandleInertiaRequests.php`.
-
----
-
-## 👤 Usuario por defecto (Superusuario)
-
-El proyecto incluye un usuario inicial con permisos de **superusuario** para acceder al sistema después de correr las migraciones/seeders:
-
-email: test@example.com
-
-password: password123
-
-> ⚠️ **Importante:** Se recomienda cambiar estas credenciales apenas montes el proyecto en un entorno real.
+**Versión:** 2025  
+**Stack:** Laravel 12 + Inertia + React 19 + Tailwind + ShadCN/UI  
+**Base de datos:** MySQL  
+**Arquitectura:** SPA (Single Page Application) con backend Laravel y frontend React integrados por Inertia.js
 
 ---
 
-## Requisitos previos
+## 🚀 Descripción General
 
-* PHP ≥ 8.2
-* Composer
-* Node.js ≥ 18/20 y npm
-* MySQL/MariaDB (XAMPP, WAMP, Laragon, Docker, etc.)
-
-> Asegurate de tener un usuario/DB creados y accesibles para completar el `.env`.
+**AcadeSys** es una plataforma moderna para la gestión académica de instituciones educativas privadas, academias e institutos.  
+Permite centralizar la información de cursos, alumnos, profesores, pagos y asistencias, ofreciendo una experiencia fluida y adaptable.
 
 ---
 
-## 🚀 Pasos para montar el repositorio clonado en una PC nueva
+## 🧩 Módulos Principales
 
-> Asumimos que **ya clonaste** el repositorio en tu equipo.
+| Módulo | Descripción |
+|--------|--------------|
+| **Usuarios y Roles** | Control total de acceso mediante Spatie Roles/Permissions. |
+| **Cursos** | Creación, asignación de docentes, horarios y gestión de alumnos inscriptos. |
+| **Asistencias** | Registro diario, observaciones y visualización de historial por curso. |
+| **Pagos** | Administración de cuotas, comprobantes y control financiero. |
+| **Dashboard** | Estadísticas resumidas y accesos rápidos según el rol del usuario. |
+| **Landing Page Pública** | Página de presentación con acceso al login y registro. |
 
-### 1) Instalar dependencias de Laravel
+---
 
+## 👥 Roles del Sistema
+
+| Rol | Permisos principales |
+|-----|-----------------------|
+| **Superusuario** | Acceso total al sistema, usuarios, roles, cursos, pagos y configuración general. |
+| **Administrativo** | Gestión académica y financiera (inscripciones y pagos). |
+| **Profesor** | Control de cursos asignados, registro e historial de asistencias. |
+| **Alumno** | Consulta de cursos, asistencias y pagos personales. |
+
+---
+
+## 👤 Cuentas de prueba (Seeders)
+
+El sistema incluye usuarios iniciales para pruebas locales:
+
+| Rol | Email | Contraseña |
+|-----|--------|-------------|
+| 🧑‍💼 Superusuario | `super@acadesys.com` | `admin123` |
+| 🧾 Administrativo | `admin@acadesys.com` | `admin123` |
+| 👨‍🏫 Profesor | `profesor@acadesys.com` | `profesor123` |
+| 🎓 Alumno | `alumno@acadesys.com` | `alumno123` |
+
+> ⚠️ Se recomienda cambiar las credenciales antes de subir el proyecto a un entorno productivo.
+
+---
+
+## 🧰 Requisitos Previos
+
+Asegurate de tener instalado:
+
+- **PHP ≥ 8.2**
+- **Composer**
+- **Node.js ≥ 18 (recomendado 20)**
+- **npm o yarn**
+- **MySQL/MariaDB**
+- (Opcional) **XAMPP / Laragon / Docker** para entorno local
+
+---
+
+## ⚙️ Configuración del Proyecto
+
+### 1️⃣ Clonar el repositorio
+```bash
+git clone https://github.com/tuusuario/acadesys.git
+cd acadesys
+```
+
+### 2️⃣ Instalar dependencias de Laravel
 ```bash
 composer install
 ```
 
-### 2) Instalar dependencias de Node (React/Vite/ShadCN)
-
+### 3️⃣ Instalar dependencias de Node
 ```bash
 npm install
 ```
 
-### 3) Crear el archivo `.env` desde la plantilla
-
+### 4️⃣ Crear el archivo `.env`
 ```bash
 cp .env.example .env
 ```
+> En Windows: `copy .env.example .env`
 
-En Windows (PowerShell/CMD):
-
-```powershell
-copy .env.example .env
-```
-
-### 4) Configurar variables en `.env`
-
-Editá el archivo `.env` y colocá tus credenciales de base de datos (y la URL de la app si aplica):
-
+### 5️⃣ Configurar conexión a base de datos
+Editá el archivo `.env` con tus credenciales locales:
 ```dotenv
+APP_NAME=AcadeSys
 APP_URL=http://127.0.0.1:8000
 
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=tu_base
-DB_USERNAME=tu_usuario
-DB_PASSWORD=tu_password
+DB_DATABASE=acadesys
+DB_USERNAME=root
+DB_PASSWORD=
 ```
 
-### 5) Generar la clave de la aplicación
-
+### 6️⃣ Generar clave de aplicación
 ```bash
 php artisan key:generate
 ```
 
-### 6) Ejecutar las migraciones
-
+### 7️⃣ Ejecutar migraciones y seeders
 ```bash
-php artisan migrate
+php artisan migrate --seed
 ```
+> Esto creará las tablas y las cuentas de prueba listadas arriba.
 
 ---
 
-## ▶️ Ejecutar el proyecto
+## ▶️ Ejecución del Proyecto
 
-### Opción A — **Levantar solo el backend (Laravel)**
-
+### 🖥 Opción A — Backend (Laravel)
 ```bash
 php artisan serve
 ```
+Por defecto: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
-> Servirá en `http://127.0.0.1:8000` (por defecto). **Esto no levanta el frontend de Vite.**
-
-### Opción B — **Levantar solo el frontend (React + Vite)**
-
+### ⚡ Opción B — Frontend (Vite)
 ```bash
 npm run dev
 ```
+Por defecto: [http://localhost:5173](http://localhost:5173)
 
-> Abrirá el servidor de Vite (p. ej. `http://localhost:5173`). Inertia usará esta build en desarrollo.
-
-### Opción C — **Levantar todo junto**
-
+### 🧩 Opción C — Ambos servidores (si está configurado en composer.json)
 ```bash
 composer run dev
 ```
+> Asegurate de tener un script `"dev": "php artisan serve & npm run dev"` en tu `composer.json`.
 
-> Este comando asume que existe un script `dev` en `composer.json` que orquesta `php artisan serve` **y** `npm run dev`. Si no está definido, usá A y B en **dos terminales**.
+---
 
-**Ejemplo opcional de script en `composer.json`:**
+## 📁 Estructura Relevante del Proyecto
 
-```json
-{
-  "scripts": {
-    "dev": "php artisan serve & npm run dev"
-  }
-}
+```
+acadesys/
+├── app/
+│   ├── Http/Controllers/
+│   │   ├── CursoController.php
+│   │   ├── AsistenciaController.php
+│   │   └── PagoController.php
+│   └── Models/
+│       ├── Curso.php
+│       ├── Asistencia.php
+│       ├── Inscripcion.php
+│       └── User.php
+├── resources/
+│   └── js/
+│       ├── pages/
+│       │   ├── Cursos/
+│       │   │   ├── ProfesorIndex.tsx
+│       │   │   ├── ProfesorShow.tsx
+│       │   │   ├── ProfesorAsistencias.tsx
+│       │   │   └── ProfesorAsistenciasHistorial.tsx
+│       │   └── welcome.tsx
+│       └── types/index.d.ts
+├── routes/web.php
+└── database/seeders/
 ```
 
-> Ajustá el script según tu SO. En Windows podrías usar herramientas como `concurrently` (Node) o ejecutar los comandos en terminales separadas.
+---
+
+## 🔍 Propiedades Globales (Inertia + Laravel 12)
+
+- Configuradas en: `app/Http/Middleware/HandleInertiaRequests.php`
+- Contienen:
+  - `auth` → usuario autenticado y roles
+  - `flash` → mensajes globales
+  - `ziggy` → rutas del frontend
+  - `sidebarOpen` → estado del layout interno
 
 ---
 
-## 📁 Rutas y Middleware de Inertia (referencia rápida)
+## 📚 Rutas principales
 
-* Definí componentes/páginas desde `routes/web.php` usando `Inertia::render(...)`.
-* Props globales y compartidos: `app/Http/Middleware/HandleInertiaRequests.php`.
-
----
-
-## ✅ Checklist rápido
-
-* [ ] `composer install`
-* [ ] `npm install`
-* [ ] `.env` creado y configurado
-* [ ] `php artisan key:generate`
-* [ ] `php artisan migrate`
-* [ ] Backend: `php artisan serve`
-* [ ] Frontend: `npm run dev` (o `composer run dev` si está configurado)
+| Ruta | Descripción |
+|------|--------------|
+| `/` | Landing pública moderna |
+| `/login` | Acceso al sistema |
+| `/register` | Registro de usuario |
+| `/dashboard` | Panel dinámico según rol |
+| `/profesor/cursos` | Cursos asignados al profesor |
+| `/profesor/asistencias` | Registro de asistencias |
+| `/profesor/cursos/{id}/asistencias` | Historial por curso |
 
 ---
 
-### Troubleshooting (rápido)
+## 🧠 Stack Técnico
 
-* **Migraciones fallan**: verificá credenciales/puerto de DB en `.env`. Probá `php artisan migrate:fresh` en entornos de desarrollo.
-* **Vite no conecta**: chequeá que `npm run dev` esté corriendo y que no haya puertos ocupados.
-* **Variables Inertia globales**: revisá `HandleInertiaRequests` para compartir datos a todas las vistas.
+- **Backend:** Laravel 12 (PHP 8.3)  
+- **Frontend:** React 19 + Inertia.js  
+- **UI:** TailwindCSS + ShadCN Components  
+- **Animaciones:** Framer Motion  
+- **Autenticación:** Laravel Breeze Starter Kit  
+- **Roles y permisos:** Spatie Laravel Permissions  
+- **Base de datos:** MySQL  
+- **Servidor local recomendado:** Laragon / XAMPP
 
 ---
 
-¡Listo! Con esto cualquier colaborador debería poder levantar el proyecto localmente en minutos.
+## 🧾 Troubleshooting Rápido
+
+| Problema | Solución sugerida |
+|-----------|------------------|
+| Migraciones fallan | Verificar credenciales de DB o ejecutar `php artisan migrate:fresh --seed` |
+| Vite no conecta | Asegurarse de que `npm run dev` esté corriendo y puerto 5173 libre |
+| Inertia no refresca props | Limpiar caché con `php artisan optimize:clear` |
+| Error con roles | Ejecutar `php artisan db:seed --class=RoleSeeder` |
+
+---
+
+## 🧩 Contribución
+
+1. Fork del repositorio  
+2. Crear una nueva rama: `git checkout -b feature/nueva-funcionalidad`  
+3. Realizar cambios y commit: `git commit -m "Descripción del cambio"`  
+4. Subir la rama: `git push origin feature/nueva-funcionalidad`  
+5. Crear un Pull Request
+
+---
+
+## 🪄 Créditos
+
+**Desarrollado por:** Equipo AcadeSys  
+**Autor principal:** Andrés Iván Ruchinsky  
+**Ubicación:** Formosa, Argentina 🇦🇷  
+**Licencia:** MIT
+
+---
+
+> _“Simplificá la gestión, potenciá la educación.” – AcadeSys 2025_  
