@@ -31,19 +31,20 @@ class Pago extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    /**
-     * Obtiene el administrativo que procesó el pago
-     */
     public function administrativo()
     {
         return $this->belongsTo(User::class, 'administrativo_id');
     }
 
-    /**
-     * Obtiene la inscripción asociada al pago
-     */
     public function inscripcion()
     {
-        return $this->belongsTo(Inscripcion::class);
+        return $this->belongsTo(Inscripcion::class, 'inscripcion_id');
     }
+
+    public function getDetallePagoAttribute()
+    {
+        return "{$this->usuario?->nombre_completo} - $ {$this->monto}";
+    }
+
+
 }

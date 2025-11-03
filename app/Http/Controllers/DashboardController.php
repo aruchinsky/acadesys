@@ -4,42 +4,109 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use App\Models\User;
 use App\Models\Curso;
+use App\Models\Inscripcion;
 use App\Models\Pago;
+use App\Models\Asistencia;
 
 class DashboardController extends Controller
 {
     public function index()
     {
         $user = Auth::user();
+        $rol = $user->getRoleNames()->first();
 
-        if ($user->hasRole('superusuario')) {
-            // Datos dinámicos
-            $totalCursos = Curso::count();
-            $totalPagos = Pago::count();
-            $ingresos = Pago::sum('monto');
+        switch ($rol) {
+            case 'alumno':
+                return $this->dashboardAlumno($user);
 
-            return Inertia::render('Dashboards/DashboardSuperusuario', [
-                'dashboard' => [
-                    'totalCursos' => $totalCursos,
-                    'totalPagos' => $totalPagos,
-                    'ingresos' => $ingresos,
-                ],
-            ]);
+            case 'profesor':
+                return $this->dashboardProfesor($user);
+
+            case 'administrativo':
+                return $this->dashboardAdministrativo($user);
+
+            case 'superusuario':
+                return $this->dashboardAdminSistema($user);
+
+            default:
+                abort(403, 'Rol no reconocido o sin acceso al dashboard');
         }
+    }
 
-        if ($user->hasRole('administrativo')) {
-            return Inertia::render('Dashboards/DashboardAdmin');
-        }
+    /**
+     * 📊 Dashboard del Administrador del Sistema
+     */
+    private function dashboardAdminSistema($user)
+    {
+        $stats = [
+            'cursosActivos' => Curso::where('activo', true)->count(),
+            'profesores'    => User::role('profesor')->count(),
+            'alumnos'       => User::role('alumno')->count(),
+            'inscripciones' => Inscripcion::count(),
+            'pagosTotales'  => Pago::count(),
+            'ingresosMes'   => Pago::whereMonth('pagado_at', now()->month)->sum('monto'),
+            'asistenciasMes'=> Asistencia::whereMonth('fecha', now()->month)->count(),
+        ];
 
-        if ($user->hasRole('profesor')) {
-            return Inertia::render('Dashboards/DashboardProfesor');
-        }
+        return Inertia::render('Dashboards/AdminSistema', [
+            'user'  => $user,
+            'stats' => $stats,
+        ]);
+    }
 
-        if ($user->hasRole('alumno')) {
-            return Inertia::render('Dashboards/DashboardAlumno');
-        }
+    /**
+     * 📋 Dashboard Administrativo (Secretaría / Caja)
+     */
+    private function dashboardAdministrativo($user)
+    {
+        $stats = [
+            'inscripcionesPendientes' => Inscripcion::where('estado', 'pendiente')->count(),
+            'pagosHoy'                => Pago::whereDate('pagado_at', now())->sum('monto'),
+            'totalCursos'             => Curso::count(),
+        ];
 
-        abort(403, 'Rol no autorizado');
+        return Inertia::render('Dashboards/Administrativo', [
+            'user'  => $user,
+            'stats' => $stats,
+        ]);
+    }
+
+    /**
+     * 🎓 Dashboard Profesor
+     */
+    private function dashboardProfesor($user)
+    {
+        $cursos = $user->cursosDictados()->withCount('inscripciones')->get();
+
+        return Inertia::render('Dashboards/Profesor', [
+            'user'   => $user,
+            'cursos' => $cursos,
+        ]);
+    }
+
+    /**
+     * 🧑‍💻 Dashboard Alumno
+     */
+    private function dashboardAlumno($user)
+    {
+        $inscripciones = $user->inscripciones()
+            ->with(['curso', 'pagos'])
+            ->latest('fecha_inscripcion')
+            ->take(3)
+            ->get();
+
+        $stats = [
+            'totalCursos'  => $user->inscripciones()->count(),
+            'pagosRealizados' => $user->pagos()->count(),
+            'asistencias'  => Asistencia::whereHas('inscripcion', fn($q) => $q->where('user_id', $user->id))->count(),
+        ];
+
+        return Inertia::render('Dashboards/Alumno', [
+            'user'          => $user,
+            'inscripciones' => $inscripciones,
+            'stats'         => $stats,
+        ]);
     }
 }

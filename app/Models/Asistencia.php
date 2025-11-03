@@ -12,7 +12,8 @@ class Asistencia extends Model
     protected $fillable = [
         'inscripcion_id',
         'fecha',
-        'presente'
+        'presente',
+        'observacion'
     ];
 
     protected $casts = [
@@ -33,7 +34,14 @@ class Asistencia extends Model
      */
     public function usuario()
     {
-        return $this->inscripcion->usuario();
+        return $this->hasOneThrough(
+            User::class,       // modelo final
+            Inscripcion::class, // modelo intermedio
+            'id',               // FK en Inscripcion → Asistencia.inscripcion_id
+            'id',               // FK en User → Inscripcion.user_id
+            'inscripcion_id',   // FK local
+            'user_id'           // FK en Inscripcion
+        );
     }
 
 }

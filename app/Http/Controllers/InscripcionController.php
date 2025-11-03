@@ -6,8 +6,8 @@ use App\Models\Inscripcion;
 use App\Models\Curso;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class InscripcionController extends Controller
 {
@@ -15,11 +15,9 @@ class InscripcionController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->hasRole('alumno')) {
-            $inscripciones = $user->inscripciones()->with('curso')->get();
-        } else {
-            $inscripciones = Inscripcion::with(['usuario', 'curso'])->orderBy('id', 'desc')->get();
-        }
+        $inscripciones = $user->hasRole('alumno')
+            ? $user->inscripciones()->with('curso')->latest()->get()
+            : Inscripcion::with(['usuario', 'curso'])->latest()->get();
 
         return Inertia::render('Inscripciones/Index', [
             'inscripciones' => $inscripciones,
@@ -28,8 +26,9 @@ class InscripcionController extends Controller
 
     public function create()
     {
-        $cursos = Curso::all(['id', 'nombre']);
-        $alumnos = User::role('alumno')->get(['id', 'nombre', 'apellido']);
+        $cursos = Curso::where('activo', true)->get(['id', 'nombre']);
+        $alumnos = User::role('alumno')->select('id', 'nombre', 'apellido')->get();
+
         return Inertia::render('Inscripciones/Create', compact('cursos', 'alumnos'));
     }
 
@@ -39,48 +38,41 @@ class InscripcionController extends Controller
 
         $validated = $request->validate([
             'curso_id' => 'required|exists:cursos,id',
-            'user_id' => 'nullable|exists:users,id',
-            'estado' => 'nullable|in:pendiente,confirmada,rechazada',
-            'origen' => 'nullable|in:landing,admin',
+            'user_id'  => 'nullable|exists:users,id',
         ]);
 
-        // Si es alumno, se preinscribe a sí mismo
         if ($user->hasRole('alumno')) {
             $validated['user_id'] = $user->id;
-            $validated['origen'] = 'landing';
-            $validated['estado'] = 'pendiente';
+            $validated['estado']  = 'pendiente';
+            $validated['origen']  = 'landing';
         } else {
-            $validated['origen'] = $validated['origen'] ?? 'admin';
+            $validated['estado'] = 'confirmada';
+            $validated['origen'] = 'admin';
         }
 
         Inscripcion::create($validated);
 
-        return redirect()->route('inscripciones.index')->with('success', 'Inscripción registrada correctamente.');
-    }
-
-    public function edit(Inscripcion $inscripcion)
-    {
-        $cursos = Curso::all(['id', 'nombre']);
-        $alumnos = User::role('alumno')->get(['id', 'nombre', 'apellido']);
-        return Inertia::render('Inscripciones/Edit', compact('inscripcion', 'cursos', 'alumnos'));
+        return redirect()->route('inscripciones.index')
+            ->with('success', 'Inscripción registrada correctamente.');
     }
 
     public function update(Request $request, Inscripcion $inscripcion)
     {
         $validated = $request->validate([
-            'curso_id' => 'required|exists:cursos,id',
-            'user_id' => 'required|exists:users,id',
             'estado' => 'required|in:pendiente,confirmada,rechazada',
         ]);
 
         $inscripcion->update($validated);
 
-        return redirect()->route('inscripciones.index')->with('success', 'Inscripción actualizada correctamente.');
+        return redirect()->route('inscripciones.index')
+            ->with('success', 'Estado actualizado correctamente.');
     }
 
     public function destroy(Inscripcion $inscripcion)
     {
         $inscripcion->delete();
-        return redirect()->route('inscripciones.index')->with('success', 'Inscripción eliminada correctamente.');
+
+        return redirect()->route('inscripciones.index')
+            ->with('success', 'Inscripción eliminada correctamente.');
     }
 }

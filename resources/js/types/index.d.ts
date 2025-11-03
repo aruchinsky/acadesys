@@ -1,251 +1,238 @@
-import { LucideIcon } from 'lucide-react';
-import type { Config } from 'ziggy-js';
+import { LucideIcon } from "lucide-react"
+import type { Config } from "ziggy-js"
+
+// ============================================================
+// 🔐 AUTENTICACIÓN Y SESIÓN
+// ============================================================
 
 export interface Auth {
-    user: User;
+  user?: User
+  roles?: string[]
+  permissions?: string[]
 }
 
+// ============================================================
+// 🧭 NAVEGACIÓN Y COMPONENTES DE INTERFAZ
+// ============================================================
+
 export interface BreadcrumbItem {
-    title: string;
-    href: string;
+  title: string
+  href: string
 }
 
 export interface NavGroup {
-    title: string;
-    items: NavItem[];
+  title: string
+  items: NavItem[]
 }
 
 export interface NavItem {
-    title: string;
-    href: string;
-    icon?: LucideIcon | null;
-    isActive?: boolean;
+  title: string
+  href: string
+  icon?: LucideIcon | null
+  isActive?: boolean
 }
+
+// ============================================================
+// 🌍 DATOS COMPARTIDOS GLOBALES (HandleInertiaRequests)
+// ============================================================
 
 export interface SharedData {
-    name: string;
-    quote: { message: string; author: string };
-    auth: Auth;
-    ziggy: Config & { location: string };
-    sidebarOpen: boolean;
-    [key: string]: unknown;
+  name: string
+  quote: { message: string; author: string }
+  auth: Auth
+  ziggy: Config & { location: string }
+  sidebarOpen: boolean
+  flash: FlashMessages
+  [key: string]: unknown
 }
 
-export type EstadoInscripcion = 'pendiente' | 'confirmada' | 'rechazada';
-export type MetodoPago = 'Efectivo' | 'Transferencia' | 'Tarjeta';
+export interface FlashMessages {
+  success?: string
+  error?: string
+  warning?: string
+  info?: string
+}
 
+// ============================================================
+// 📚 ENTIDADES PRINCIPALES
+// ============================================================
+
+export type EstadoInscripcion = "pendiente" | "confirmada" | "rechazada"
+export type MetodoPago = "Efectivo" | "Transferencia" | "Tarjeta"
+
+// --------------------- USUARIO ---------------------
 export interface User {
-    id: number;
-    name: string;
-    email: string;
-    nombre: string;
-    apellido: string;
-    nombre_completo: string;
-    dni: string;
-    telefono: string | null;
-    avatar?: string;
-    email_verified_at: string | null;
-    created_at: string;
-    updated_at: string;
-    inscripciones?: Inscripcion[];
-    inscripciones_count?: number;
-    cursos?: Curso[];
-    cursos_count?: number;
-    pagos?: Pago[];
-    pagosAdministrados?: Pago[];
+  id: number
+  name: string
+  email: string
+  nombre: string
+  apellido: string
+  nombre_completo: string
+  dni: string
+  telefono: string | null
+  avatar?: string
+  email_verified_at: string | null
+  created_at: string
+  updated_at: string
+
+  // Relaciones
+  inscripciones?: Inscripcion[]
+  inscripciones_count?: number
+  cursos?: Curso[]
+  cursos_count?: number
+  pagos?: Pago[]
+  pagosAdministrados?: Pago[]
 }
 
-export interface Inscripcion {
-    id: number;
-    user_id: number;
-    curso_id: number;
-    estado: EstadoInscripcion;
-    fecha_inscripcion: string;
-    origen: 'landing' | 'admin';
-    created_at: string;
-    updated_at: string;
-    curso: string;
-    usuario?: User;
-    pagos?: Pago[];
-    asistencias?: Asistencia[];
-}
-
+// --------------------- CURSOS ---------------------
 export interface Curso {
-    id: number;
-    nombre: string;
-    descripcion: string | null;
-    fecha_inicio: string | null;
-    fecha_fin: string | null;
-    created_at: string;
-    updated_at: string;
-    usuarios?: User[];
-    inscripciones?: Inscripcion[];
-    horarios?: CursoHorario[];
+  id: number
+  nombre: string
+  descripcion: string | null
+  fecha_inicio: string | null
+  fecha_fin: string | null
+  created_at: string
+  updated_at: string
+
+  // Relaciones
+  usuarios?: User[]
+  inscripciones?: Inscripcion[]
+  horarios?: CursoHorario[]
 }
 
+// --------------------- INSCRIPCIONES ---------------------
+export interface Inscripcion {
+  id: number
+  user_id: number
+  curso_id: number
+  estado: EstadoInscripcion
+  fecha_inscripcion: string
+  origen: "landing" | "admin"
+  created_at: string
+  updated_at: string
+
+  // Relaciones
+  usuario?: User
+  curso?: Curso
+  pagos?: Pago[]
+  asistencias?: Asistencia[]
+}
+
+// --------------------- PAGOS ---------------------
 export interface Pago {
-    id: number;
-    user_id: number;
-    inscripcion_id: number | null;
-    monto: number;
-    pagado_at: string;
-    metodo_pago: MetodoPago;
-    administrativo_id: number | null;
-    created_at: string;
-    updated_at: string;
-    usuario?: User;
-    administrativo?: User;
-    inscripcion?: Inscripcion;
+  id: number
+  user_id: number
+  inscripcion_id: number | null
+  monto: number
+  pagado_at: string
+  metodo_pago: MetodoPago
+  administrativo_id: number | null
+  created_at: string
+  updated_at: string
+
+  // Relaciones
+  usuario?: User
+  administrativo?: User
+  inscripcion?: Inscripcion
 }
 
+// --------------------- ASISTENCIAS ---------------------
 export interface Asistencia {
-    id: number;
-    inscripcion_id: number;
-    fecha: string;
-    presente: boolean;
-    created_at: string;
-    updated_at: string;
-    inscripcion?: Inscripcion;
-    usuario?: User;
+  id: number
+  inscripcion_id: number
+  fecha: string
+  presente: boolean
+  created_at: string
+  updated_at: string
+
+  // Relaciones
+  inscripcion?: Inscripcion
+  usuario?: User
 }
 
+// --------------------- HORARIOS DE CURSOS ---------------------
 export interface CursoHorario {
-    id: number;
-    curso_id: number;
-    dia_semana: number;
-    hora_inicio: string;
-    hora_fin: string;
-    created_at: string;
-    updated_at: string;
-    curso?: Curso;
+  id: number
+  curso_id: number
+  dia_semana: number
+  hora_inicio: string
+  hora_fin: string
+  created_at: string
+  updated_at: string
+  curso?: Curso
 }
 
+// ============================================================
+// ⚙️ ROLES Y PERMISOS (Spatie)
+// ============================================================
 
 export interface Role {
-    id: number;
-    name: string;
-    guard_name: string;
-    users_count: number;
-    created_at: string;
-    updated_at: string;
-    permissions_count?: number;
-    permissions?: Permission[];
-    [key: string]: unknown;
+  id: number
+  name: string
+  guard_name: string
+  users_count?: number
+  permissions_count?: number
+  created_at: string
+  updated_at: string
+  permissions?: Permission[]
+  [key: string]: unknown
 }
 
 export interface Permission {
-    id: number;
-    name: string;
-    guard_name: string;
-    created_at: string;
-    updated_at: string;
+  id: number
+  name: string
+  guard_name: string
+  created_at: string
+  updated_at: string
 }
 
+// Relación usuario ↔ roles
 export interface UserWithRoles {
-    id: number;
-    name: string;
-    email: string;
-    dni: string;
-    telefono: string | null;
-    roles: {id: number, name: string}[] // Array de roles
-    [key: string]: unknown;
+  id: number
+  name: string
+  email: string
+  dni: string
+  telefono: string | null
+  roles: { id: number; name: string }[]
+  [key: string]: unknown
 }
 
-export interface Inscripcion {
-    id: number;
-    user_id: number;
-    curso_id: number;
-    estado: 'pendiente' | 'confirmada' | 'rechazada';
-    fecha_inscripcion: string;
-    origen: 'landing' | 'admin';
-    created_at: string;
-    updated_at: string;
-    usuario?: User;
-    curso?: Curso;
-    pagos?: Pago[];
-    asistencias?: Asistencia[];
-}
-
-export interface Curso {
-    id: number;
-    nombre: string;
-    descripcion: string | null;
-    fecha_inicio: string | null;
-    fecha_fin: string | null;
-    created_at: string;
-    updated_at: string;
-    usuarios?: User[];
-    inscripciones?: Inscripcion[];
-    horarios?: CursoHorario[];
-}
-
-export interface Pago {
-    id: number;
-    user_id: number;
-    inscripcion_id: number | null;
-    monto: number;
-    pagado_at: string;
-    metodo_pago: 'Efectivo' | 'Transferencia' | 'Tarjeta';
-    administrativo_id: number | null;
-    created_at: string;
-    updated_at: string;
-    usuario?: User;
-    administrativo?: User;
-    inscripcion?: Inscripcion;
-}
-
-export interface Asistencia {
-    id: number;
-    inscripcion_id: number;
-    fecha: string;
-    presente: boolean;
-    created_at: string;
-    updated_at: string;
-    inscripcion?: Inscripcion;
-    usuario?: User;
-}
-
-export interface CursoHorario {
-    id: number;
-    curso_id: number;
-    dia_semana: number;
-    hora_inicio: string;
-    hora_fin: string;
-    created_at: string;
-    updated_at: string;
-    curso?: Curso;
-}
+// ============================================================
+// 📊 DASHBOARD
+// ============================================================
 
 export interface DashboardData {
-    totalCursos: number;
-    totalPagos: number;
-    ingresos: number;
-    cursosPorCategoria: Record<string, number>;
+  totalCursos: number
+  totalPagos: number
+  ingresos: number
+  cursosPorCategoria: Record<string, number>
 }
 
+// ============================================================
+// 🧩 PROPS GLOBALES DE INERTIA
+// ============================================================
+
 export interface pageProps {
-    flash: {
-        success?: string;
-        error?: string;
-        warning?: string;
-        info?: string;
-    };
-    [key: string]: unknown;
+  flash: FlashMessages
 
-    auth?: {
-        user?: User;
-        roles: string[];
-        permissions: string[];
-    };
+  auth?: {
+    user?: User
+    roles: string[]
+    permissions: string[]
+  }
 
-    dashboard?: DashboardData;
+  dashboard?: DashboardData
 
-    users: UserWithRoles[];
-    usuarios: User[];
-    roles: Role[] | {id: number; name: string}[];
-    inscripciones: Inscripcion[];
-    cursos: Curso[];
-    pagos: Pago[];
-    asistencias: Asistencia[];
-    cursoHorarios: CursoHorario[];
+  // Colecciones principales (se cargan según la vista)
+  users?: UserWithRoles[]
+  usuarios?: User[]
+  roles?: Role[] | { id: number; name: string }[]
+  inscripciones?: Inscripcion[]
+  cursos?: Curso[]
+  pagos?: Pago[]
+  asistencias?: Asistencia[]
+  cursoHorarios?: CursoHorario[]
+
+  // Propiedades dinámicas adicionales
+  [key: string]: unknown
 }

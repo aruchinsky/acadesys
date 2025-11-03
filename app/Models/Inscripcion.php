@@ -16,7 +16,8 @@ class Inscripcion extends Model
         'curso_id',
         'estado',
         'fecha_inscripcion',
-        'origen'
+        'origen',
+        'monto_total',
     ];
 
     protected $casts = [
@@ -44,7 +45,7 @@ class Inscripcion extends Model
      */
     public function pagos()
     {
-        return $this->hasMany(Pago::class);
+        return $this->hasMany(Pago::class, 'inscripcion_id');
     }
 
     /**
@@ -54,4 +55,10 @@ class Inscripcion extends Model
     {
         return $this->hasMany(Asistencia::class);
     }
+
+    public function getNombreAlumnoAttribute()
+    {
+        return $this->usuario?->nombre_completo;
+    }
+
 }

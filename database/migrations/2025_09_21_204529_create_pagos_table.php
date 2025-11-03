@@ -13,23 +13,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('pagos', function (Blueprint $table) {
-            $table->id(); // id INT AUTO_INCREMENT PRIMARY KEY
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // user_id con FK a users
-            $table->unsignedBigInteger('inscripcion_id')->nullable(); // inscripcion_id
-            $table->decimal('monto', 10, 2); // monto DECIMAL(10,2)
-            $table->dateTime('pagado_at')->default(DB::raw('CURRENT_TIMESTAMP')); // pagado_at
+            $table->id();
+            $table->foreignId('inscripcion_id')->constrained('inscripciones')->cascadeOnDelete();
+            $table->decimal('monto', 10, 2);
+            $table->dateTime('pagado_at')->useCurrent();
             $table->enum('metodo_pago', ['Efectivo','Transferencia','Tarjeta'])->default('Efectivo');
-            $table->unsignedBigInteger('administrativo_id')->nullable(); // FK administrativo
-            $table->timestamps(); // created_at y updated_at
-
-            // Índices
-            $table->index('user_id');
-            $table->index('inscripcion_id');
-            $table->index('administrativo_id');
-
-            // Claves foráneas
-            $table->foreign('inscripcion_id')->references('id')->on('inscripciones')->onDelete('set null');
-            $table->foreign('administrativo_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreignId('administrativo_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete(); // si querés registrar quién pagó (no obligatorio)
+            $table->timestamps();
         });
     }
 

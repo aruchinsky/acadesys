@@ -14,15 +14,15 @@ return new class extends Migration
     {
         Schema::create('inscripciones', function (Blueprint $table) {
             $table->id();
-            
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('curso_id')->constrained()->onDelete('cascade');
-            
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('curso_id')->constrained('cursos')->cascadeOnDelete();
             $table->enum('estado', ['pendiente','confirmada','rechazada'])->default('pendiente');
-            $table->date('fecha_inscripcion')->default(DB::raw('CURRENT_DATE'));
             $table->enum('origen', ['landing','admin'])->default('landing');
-
+            $table->date('fecha_inscripcion')->useCurrent();
+            $table->decimal('monto_total', 10, 2)->nullable();
             $table->timestamps();
+
+            $table->unique(['user_id', 'curso_id']); // evita duplicidad
         });
     }
 

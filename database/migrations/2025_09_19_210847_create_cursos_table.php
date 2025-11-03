@@ -12,12 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('cursos', function (Blueprint $table) {
-            $table->id(); // id INT AUTO_INCREMENT PRIMARY KEY
+            $table->id();
             $table->string('nombre', 150);
             $table->text('descripcion')->nullable();
             $table->date('fecha_inicio')->nullable();
             $table->date('fecha_fin')->nullable();
-            $table->timestamps(); // created_at y updated_at
+            $table->decimal('arancel_base', 10, 2)->default(0);
+            $table->enum('modalidad', ['Presencial', 'Virtual'])->default('Presencial');
+            $table->boolean('activo')->default(true);
+            $table->timestamps();
         });
     }
 

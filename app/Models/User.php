@@ -74,7 +74,7 @@ class User extends Authenticatable
     /**
      * Obtiene los pagos que el usuario ha procesado como administrativo
      */
-    public function pagosAdministrados()
+    public function pagosRealizados()
     {
         return $this->hasMany(Pago::class, 'administrativo_id');
     }

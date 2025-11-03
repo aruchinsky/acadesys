@@ -2,42 +2,43 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
+use App\Models\User;
 use Spatie\Permission\Models\Role;
 
 class UserRoleController extends Controller
 {
+    /**
+     * Vista de asignación de roles (si se necesitara independiente)
+     */
     public function index()
     {
-        $users = User::with('roles')->get();
+        $users = User::with('roles:id,name')->get();
+        $roles = Role::select('id', 'name')->get();
 
-        $roles = Role::all();
-
-        return Inertia::render('Users/Roles', [
+        return inertia('Usuarios/Index', [
             'users' => $users,
             'roles' => $roles,
         ]);
     }
 
+    /**
+     * Actualización masiva de roles desde el listado de usuarios.
+     */
     public function update(Request $request)
     {
-        $validated = $request->validate([
-            'roles' => 'required|array',
-            'roles.*' => 'string|exists:roles,name',
-        ]);
+        $rolesData = $request->input('roles', []);
 
-        foreach ($validated['roles'] as $userId => $roleName) {
+        foreach ($rolesData as $userId => $roleName) {
             $user = User::find($userId);
-            if ($user){
-                $user->syncRoles([$roleName]); // Sincroniza los roles del usuario
+
+            if ($user && $roleName && Role::where('name', $roleName)->exists()) {
+                $user->syncRoles([$roleName]);
             }
-            
         }
 
         return redirect()
-                ->route('users.roles.index')
-                ->with('success', 'Roles del usuario actualizados correctamente.');
+            ->route('usuarios.index')
+            ->with('success', 'Roles de usuarios actualizados correctamente.');
     }
 }

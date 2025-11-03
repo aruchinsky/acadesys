@@ -5,12 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Asistencia;
 use App\Models\Inscripcion;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class AsistenciaController extends Controller
 {
-
     public function index()
     {
         $user = Auth::user();
@@ -18,15 +17,14 @@ class AsistenciaController extends Controller
         if ($user->hasRole('alumno')) {
             $asistencias = Asistencia::whereHas('inscripcion', fn($q) =>
                 $q->where('user_id', $user->id)
-            )->with('inscripcion.curso')->orderBy('fecha', 'desc')->get();
+            )->with(['inscripcion.curso'])->latest('fecha')->get();
         } elseif ($user->hasRole('profesor')) {
-            // El profesor solo ve las asistencias de sus cursos
             $asistencias = Asistencia::whereHas('inscripcion.curso.profesores', fn($q) =>
                 $q->where('users.id', $user->id)
-            )->with(['inscripcion.usuario', 'inscripcion.curso'])->orderBy('fecha', 'desc')->get();
+            )->with(['inscripcion.usuario', 'inscripcion.curso'])->latest('fecha')->get();
         } else {
             $asistencias = Asistencia::with(['inscripcion.usuario', 'inscripcion.curso'])
-                ->orderBy('fecha', 'desc')->get();
+                ->latest('fecha')->get();
         }
 
         return Inertia::render('Asistencias/Index', compact('asistencias'));
@@ -35,6 +33,7 @@ class AsistenciaController extends Controller
     public function create()
     {
         $inscripciones = Inscripcion::with(['usuario', 'curso'])->get();
+
         return Inertia::render('Asistencias/Create', compact('inscripciones'));
     }
 
@@ -42,21 +41,25 @@ class AsistenciaController extends Controller
     {
         $validated = $request->validate([
             'inscripcion_id' => 'required|exists:inscripciones,id',
-            'fecha' => 'required|date',
-            'presente' => 'required|boolean',
+            'fecha'          => 'required|date',
+            'presente'       => 'required|boolean',
+            'observacion'    => 'nullable|string',
         ]);
 
         Asistencia::updateOrCreate(
             ['inscripcion_id' => $validated['inscripcion_id'], 'fecha' => $validated['fecha']],
-            ['presente' => $validated['presente']]
+            ['presente' => $validated['presente'], 'observacion' => $validated['observacion'] ?? null]
         );
 
-        return redirect()->route('asistencias.index')->with('success', 'Asistencia registrada correctamente.');
+        return redirect()->route('asistencias.index')
+            ->with('success', 'Asistencia registrada correctamente.');
     }
 
     public function destroy(Asistencia $asistencia)
     {
         $asistencia->delete();
-        return redirect()->route('asistencias.index')->with('success', 'Asistencia eliminada correctamente.');
+
+        return redirect()->route('asistencias.index')
+            ->with('success', 'Asistencia eliminada correctamente.');
     }
 }

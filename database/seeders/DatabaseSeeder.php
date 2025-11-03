@@ -2,9 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,17 +11,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Ejecuta el seeder de roles y permisos primero
+        // Limpia cache de roles y permisos
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
+        // 1️⃣ Crear roles y permisos
         $this->call(RolesAndPermissionsSeeder::class);
 
-        // Crear usuario superusuario por defecto
-        $user = User::factory()->create([
-            'name' => 'Developer',
-            'email' => 'test@example.com',
-            'password' => Hash::make('password123'), // clave segura hasheada
-        ]);
-
-        // Asignar rol superusuario (debe existir en RolesAndPermissionsSeeder)
-        $user->assignRole('superusuario');
+        // 2️⃣ Poblado completo del sistema
+        $this->call(AcadeSysDemoSeeder::class);
     }
 }

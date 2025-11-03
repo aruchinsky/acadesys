@@ -13,8 +13,12 @@ class Curso extends Model
         'nombre',
         'descripcion',
         'fecha_inicio',
-        'fecha_fin'
+        'fecha_fin',
+        'arancel_base',
+        'modalidad',
+        'activo',
     ];
+
 
     protected $casts = [
         'fecha_inicio' => 'date',
@@ -26,7 +30,7 @@ class Curso extends Model
      */
     public function usuarios()
     {
-        return $this->belongsToMany(User::class, 'inscripciones')
+        return $this->belongsToMany(User::class, 'inscripciones', 'curso_id', 'user_id')
                     ->withPivot(['estado', 'fecha_inscripcion', 'origen'])
                     ->withTimestamps();
     }

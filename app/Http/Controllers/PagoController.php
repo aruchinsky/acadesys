@@ -6,8 +6,8 @@ use App\Models\Pago;
 use App\Models\Inscripcion;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class PagoController extends Controller
 {
@@ -15,24 +15,23 @@ class PagoController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->hasRole('alumno')) {
-            $pagos = Pago::where('user_id', $user->id)
-                         ->with(['inscripcion.curso'])
-                         ->orderBy('id', 'desc')
-                         ->get();
-        } else {
-            $pagos = Pago::with(['usuario', 'inscripcion.curso', 'administrativo'])
-                         ->orderBy('id', 'desc')
-                         ->get();
-        }
+        $pagos = $user->hasRole('alumno')
+            ? Pago::whereHas('inscripcion', fn($q) => $q->where('user_id', $user->id))
+                ->with('inscripcion.curso')
+                ->latest()
+                ->get()
+            : Pago::with(['inscripcion.usuario', 'inscripcion.curso', 'administrativo'])
+                ->latest()
+                ->get();
 
         return Inertia::render('Pagos/Index', compact('pagos'));
     }
 
     public function create()
     {
-        $alumnos = User::role('alumno')->get(['id', 'nombre', 'apellido']);
-        $inscripciones = Inscripcion::with('curso')->get(['id', 'curso_id']);
+        $alumnos = User::role('alumno')->select('id', 'nombre', 'apellido')->get();
+        $inscripciones = Inscripcion::with('curso:id,nombre')->get(['id', 'curso_id']);
+
         return Inertia::render('Pagos/Create', compact('alumnos', 'inscripciones'));
     }
 
@@ -41,10 +40,9 @@ class PagoController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'inscripcion_id' => 'nullable|exists:inscripciones,id',
-            'monto' => 'required|numeric|min:0',
-            'metodo_pago' => 'required|in:Efectivo,Transferencia,Tarjeta',
+            'inscripcion_id' => 'required|exists:inscripciones,id',
+            'monto'          => 'required|numeric|min:0',
+            'metodo_pago'    => 'required|in:Efectivo,Transferencia,Tarjeta',
         ]);
 
         Pago::create([
@@ -52,12 +50,15 @@ class PagoController extends Controller
             'administrativo_id' => $user->id,
         ]);
 
-        return redirect()->route('pagos.index')->with('success', 'Pago registrado correctamente.');
+        return redirect()->route('pagos.index')
+            ->with('success', 'Pago registrado correctamente.');
     }
 
     public function destroy(Pago $pago)
     {
         $pago->delete();
-        return redirect()->route('pagos.index')->with('success', 'Pago eliminado correctamente.');
+
+        return redirect()->route('pagos.index')
+            ->with('success', 'Pago eliminado correctamente.');
     }
 }

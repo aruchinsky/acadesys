@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('inscripcion_id');
             $table->date('fecha');
             $table->boolean('presente')->default(true);
+            $table->text('observacion')->nullable();
             $table->timestamps();
 
             $table->unique(['inscripcion_id', 'fecha'], 'uq_asistencia');

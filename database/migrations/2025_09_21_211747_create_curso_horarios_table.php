@@ -23,6 +23,7 @@ return new class extends Migration
             $table->time('hora_inicio')->nullable();
             $table->integer('duracion_min')->nullable(); // duración en minutos
             $table->string('sala', 50)->nullable(); // sala o aula
+            $table->enum('turno', ['Mañana', 'Tarde', 'Noche'])->nullable();
             
             $table->timestamps(); // created_at y updated_at
         });
