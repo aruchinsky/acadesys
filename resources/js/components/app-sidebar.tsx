@@ -23,6 +23,7 @@ import {
   Settings2,
   BarChart3,
   Home,
+  GraduationCap,
 } from "lucide-react"
 import AppLogo from "./app-logo"
 
@@ -31,9 +32,7 @@ export function AppSidebar() {
   const userRoles = auth?.roles ?? []
   const rol = userRoles[0]?.toLowerCase() ?? null
 
-  // ============================================================
-  // 🔹 Base de navegación (común a todos)
-  // ============================================================
+  // 🔹 Base común
   const mainNavItems: NavItem[] = [
     {
       title: "Panel principal",
@@ -42,9 +41,7 @@ export function AppSidebar() {
     },
   ]
 
-  // ============================================================
   // 🔹 Superusuario
-  // ============================================================
   if (rol === "superusuario") {
     mainNavItems.push(
       { title: "Usuarios", href: route("usuarios.index"), icon: Users },
@@ -58,9 +55,7 @@ export function AppSidebar() {
     )
   }
 
-  // ============================================================
   // 🔹 Administrativo
-  // ============================================================
   if (rol === "administrativo") {
     mainNavItems.push(
       { title: "Cursos", href: route("cursos.index"), icon: BookOpen },
@@ -71,9 +66,7 @@ export function AppSidebar() {
     )
   }
 
-  // ============================================================
   // 🔹 Profesor
-  // ============================================================
   if (rol === "profesor") {
     mainNavItems.push(
       { title: "Mis Cursos", href: route("profesor.cursos.index"), icon: BookOpen },
@@ -82,20 +75,16 @@ export function AppSidebar() {
     )
   }
 
-  // ============================================================
-  // 🔹 Alumno
-  // ============================================================
+  // 🔹 Alumno (ACTUALIZADO)
   if (rol === "alumno") {
     mainNavItems.push(
-      { title: "Mis Cursos", href: route("alumno.cursos.index"), icon: BookOpen },
+      { title: "Cursos disponibles", href: route("alumno.cursos.index"), icon: GraduationCap },
+      { title: "Mis Cursos", href: route("alumno.mis-cursos.index"), icon: BookOpen },
       { title: "Pagos", href: route("alumno.pagos.index"), icon: Wallet },
       { title: "Asistencias", href: route("alumno.asistencias.index"), icon: ClipboardList },
     )
   }
 
-  // ============================================================
-  // 🔹 Footer (pie de menú)
-  // ============================================================
   const footerNavItems: NavItem[] = []
 
   return (
@@ -104,7 +93,7 @@ export function AppSidebar() {
       variant="inset"
       className="bg-[var(--sidebar)] text-[var(--sidebar-foreground)] border-r border-[var(--sidebar-border)] transition-colors duration-200"
     >
-      {/* ---------- ENCABEZADO ---------- */}
+      {/* Header */}
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -119,9 +108,8 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
-      {/* ---------- CONTENIDO ---------- */}
+      {/* Contenido */}
       <SidebarContent>
-        {/* Inicio */}
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
@@ -133,14 +121,11 @@ export function AppSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
 
-        {/* Separador */}
         <div className="my-2 border-t border-[var(--sidebar-border)]" />
-
-        {/* Menú principal */}
         <NavMain items={mainNavItems} />
       </SidebarContent>
 
-      {/* ---------- PIE ---------- */}
+      {/* Footer */}
       <SidebarFooter>
         {footerNavItems.length > 0 && <NavFooter items={footerNavItems} className="mt-auto" />}
         <NavUser />

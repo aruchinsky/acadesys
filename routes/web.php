@@ -14,7 +14,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserRoleController;
 
 // ============================================================
-// 🌐 PÁGINA PRINCIPAL PÚBLICA
+// PÁGINA PRINCIPAL PÚBLICA
 // ============================================================
 
 Route::get('/', function () {
@@ -22,7 +22,7 @@ Route::get('/', function () {
 })->name('home');
 
 // ============================================================
-// 🔒 ÁREA AUTENTICADA
+// ÁREA AUTENTICADA
 // ============================================================
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -32,7 +32,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('dashboard');
 
     // ============================================================
-    // 📘 MÓDULOS ACADÉMICOS (ADMINISTRATIVOS / SUPERUSUARIO)
+    // MÓDULOS ACADÉMICOS (ADMINISTRATIVOS / SUPERUSUARIO)
     // ============================================================
 
     // --- Cursos ---
@@ -56,7 +56,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role:superusuario|administrativo|profesor|alumno');
 
     // ============================================================
-    // 👨‍🏫 ÁREA PROFESOR
+    // ÁREA PROFESOR
     // ============================================================
 
     Route::middleware('role:superusuario|profesor')->group(function () {
@@ -76,20 +76,35 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // ============================================================
-    // 🎓 ÁREA ALUMNO
+    // ÁREA ALUMNO
     // ============================================================
-
     Route::middleware('role:superusuario|alumno')->group(function () {
-        Route::get('/alumno/cursos', [InscripcionController::class, 'index'])
+        // Cursos
+        Route::get('/alumno/cursos', [CursoController::class, 'alumnoIndex'])
             ->name('alumno.cursos.index');
-        Route::get('/alumno/pagos', [PagoController::class, 'index'])
-            ->name('alumno.pagos.index');
+
+        Route::get('/alumno/mis-cursos', [CursoController::class, 'alumnoMisCursos'])
+            ->name('alumno.mis-cursos.index');
+
+        Route::get('/alumno/cursos/{curso}', [CursoController::class, 'alumnoShow'])
+            ->name('alumno.cursos.show');
+
+        // 🔹 NUEVO: Pagos (placeholder hasta implementar el módulo)
+        Route::get('/alumno/pagos', function () {
+            return Inertia::render('Pagos/AlumnoIndex', [
+                'mensaje' => 'Módulo de pagos de alumno próximamente disponible.',
+            ]);
+        })->name('alumno.pagos.index');
+
+        // Asistencias (ya existentes)
         Route::get('/alumno/asistencias', [AsistenciaController::class, 'index'])
             ->name('alumno.asistencias.index');
     });
 
+
+
     // ============================================================
-    // 🧑‍💼 ÁREA ADMINISTRATIVO
+    // ÁREA ADMINISTRATIVO
     // ============================================================
 
     Route::middleware('role:superusuario|administrativo')->group(function () {
@@ -101,7 +116,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // ============================================================
-// ⚙️ ÁREA DE ADMINISTRACIÓN AVANZADA (solo superusuario)
+// ÁREA DE ADMINISTRACIÓN AVANZADA (solo superusuario)
 // ============================================================
 
 Route::middleware(['auth', 'verified', 'role:superusuario'])->group(function () {
@@ -123,7 +138,7 @@ Route::middleware(['auth', 'verified', 'role:superusuario'])->group(function () 
 });
 
 // ============================================================
-// 🧭 CONFIGURACIONES Y AUTENTICACIÓN
+// CONFIGURACIONES Y AUTENTICACIÓN
 // ============================================================
 
 require __DIR__ . '/settings.php';

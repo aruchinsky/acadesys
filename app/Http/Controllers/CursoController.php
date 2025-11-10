@@ -161,4 +161,82 @@ class CursoController extends Controller
         ]);
     }
 
+    // ============================
+    // Vistas de ALUMNO
+    // ============================
+    public function alumnoIndex()
+    {
+        $user = Auth::user();
+
+        // Cursos activos, con profesores/horarios y la inscripcion del alumno (si existe)
+        $cursos = Curso::query()
+            ->where('activo', true)
+            ->with([
+                'profesores:id,nombre,apellido',
+                'horarios:id,curso_id,dia_en_texto,hora_inicio,duracion_min,sala,turno',
+                // Trae solo la inscripción del alumno logueado
+                'inscripciones' => function ($q) use ($user) {
+                    $q->select('id','user_id','curso_id','estado','fecha_inscripcion','origen')
+                    ->where('user_id', $user->id);
+                },
+            ])
+            ->withCount('inscripciones')
+            ->orderBy('fecha_inicio', 'asc')
+            ->get();
+
+        return Inertia::render('Cursos/AlumnoIndex', [
+            'cursos' => $cursos,
+        ]);
+    }
+
+    public function alumnoMisCursos()
+    {
+        $user = Auth::user();
+
+        // Cursos donde el alumno ESTÁ inscripto (usando la relación belongsToMany del User)
+        $cursos = $user->cursos()
+            ->with([
+                'profesores:id,nombre,apellido',
+                'horarios:id,curso_id,dia_en_texto,hora_inicio,duracion_min,sala,turno',
+                // Trae la propia inscripción + asistencias del alumno (para % de asistencia)
+                'inscripciones' => function ($q) use ($user) {
+                    $q->select('id','user_id','curso_id','estado','fecha_inscripcion','origen')
+                    ->where('user_id', $user->id)
+                    ->with(['asistencias:id,inscripcion_id,fecha,presente,observacion']);
+                },
+            ])
+            ->withCount('inscripciones')
+            ->orderBy('fecha_inicio','asc')
+            ->get();
+
+        return Inertia::render('Cursos/AlumnoMisCursos', [
+            'cursos' => $cursos,
+        ]);
+    }
+
+    public function alumnoShow(Curso $curso)
+    {
+        $user = Auth::user();
+
+        $curso->load([
+            'profesores:id,nombre,apellido',
+            'horarios:id,curso_id,dia_en_texto,hora_inicio,duracion_min,sala,turno',
+            // Trae SOLO la inscripción del alumno + asistencias para historial propio
+            'inscripciones' => function ($q) use ($user) {
+                $q->select('id','user_id','curso_id','estado','fecha_inscripcion','origen')
+                ->where('user_id', $user->id)
+                ->with(['asistencias:id,inscripcion_id,fecha,presente,observacion']);
+            },
+        ]);
+
+        // Para comodidad del front, exponemos miInscripcion directamente
+        $miInscripcion = $curso->inscripciones->first();
+
+        return Inertia::render('Cursos/AlumnoShow', [
+            'curso'         => $curso,
+            'miInscripcion' => $miInscripcion,
+        ]);
+    }
+
+
 }

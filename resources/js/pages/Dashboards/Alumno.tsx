@@ -11,17 +11,47 @@ export default function Alumno() {
   const user = auth.user
 
   const opciones = [
-    { titulo: "Mis Cursos", descripcion: "Visualizá tus cursos activos.", icono: BookOpen, href: route("inscripciones.index") },
-    { titulo: "Pagos", descripcion: "Consultá tus cuotas y recibos.", icono: Wallet, href: route("pagos.index") },
-    { titulo: "Asistencias", descripcion: "Revisá tus registros de asistencia.", icono: ClipboardList, href: route("asistencias.index") },
-    { titulo: "Calendario", descripcion: "Fechas importantes de tu curso.", icono: CalendarCheck, href: "#" },
+    {
+      titulo: "Cursos disponibles",
+      descripcion: "Explorá los cursos abiertos para inscripción.",
+      icono: GraduationCap,
+      href: route("alumno.cursos.index"),
+    },
+    {
+      titulo: "Mis Cursos",
+      descripcion: "Visualizá tus cursos activos y progreso.",
+      icono: BookOpen,
+      href: route("alumno.mis-cursos.index"),
+    },
+    {
+      titulo: "Pagos",
+      descripcion: "Consultá tus cuotas, comprobantes y estado.",
+      icono: Wallet,
+      href: route("alumno.pagos.index"),
+    },
+    {
+      titulo: "Asistencias",
+      descripcion: "Revisá tus registros de asistencia.",
+      icono: ClipboardList,
+      href: route("alumno.asistencias.index"),
+    },
+    {
+      titulo: "Calendario",
+      descripcion: "Fechas importantes y próximos exámenes.",
+      icono: CalendarCheck,
+      href: "#",
+    },
   ]
 
-  const fade = { hidden: { opacity: 0, y: 20 }, visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.05 } }) }
+  const fade = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.05 } }),
+  }
 
   return (
     <AppLayout>
       <Head title="Dashboard Estudiante" />
+
       <motion.div
         initial={{ opacity: 0, y: -15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -29,10 +59,10 @@ export default function Alumno() {
         className="rounded-xl border border-border shadow-sm p-6 bg-gradient-to-r from-primary/15 via-background to-secondary/15 mx-2 sm:mx-4 md:mx-8"
       >
         <h1 className="text-2xl font-semibold flex items-center gap-2 text-foreground">
-          <GraduationCap className="w-6 h-6 text-primary" /> ¡Hola, {user.name}!
+          <GraduationCap className="w-6 h-6 text-primary" /> ¡Hola, {user?.nombre ?? 'Estudiante'}!
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Bienvenido a tu espacio de estudiante 🎓. Consultá tus cursos, pagos y asistencias desde aquí.
+          Bienvenido a tu panel de estudiante 🎓. Consultá tus cursos, pagos y asistencias desde aquí.
         </p>
       </motion.div>
 
