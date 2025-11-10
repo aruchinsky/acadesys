@@ -44,10 +44,10 @@ El sistema incluye usuarios iniciales para pruebas locales:
 
 | Rol | Email | Contraseña |
 |-----|--------|-------------|
-| 🧑‍💼 Superusuario | `super@acadesys.com` | `admin123` |
-| 🧾 Administrativo | `admin@acadesys.com` | `admin123` |
-| 👨‍🏫 Profesor | `profesor@acadesys.com` | `profesor123` |
-| 🎓 Alumno | `alumno@acadesys.com` | `alumno123` |
+| 🧑‍💼 Superusuario | `super@acadesys.test` | `password123` |
+| 🧾 Administrativo | `admin@acadesys.test` | `password123` |
+| 👨‍🏫 Profesor | `profesor@acadesys.test` | `password123` |
+| 🎓 Alumno | `alumno@acadesys.test` | `password123` |
 
 > ⚠️ Se recomienda cambiar las credenciales antes de subir el proyecto a un entorno productivo.
 
