@@ -10,6 +10,7 @@ use App\Models\Curso;
 use App\Models\Inscripcion;
 use App\Models\Pago;
 use App\Models\Asistencia;
+use Faker\Factory as Faker;
 
 class AcadeSysDemoSeeder extends Seeder
 {
@@ -17,8 +18,10 @@ class AcadeSysDemoSeeder extends Seeder
     {
         DB::transaction(function () {
 
+            $faker = Faker::create(); // ← NECESARIO
+
             // =====================================================
-            // 🧍‍♂️ USUARIOS BASE (Superusuario, Administrativo, Profesor, Alumno)
+            // 🧍‍♂️ USUARIOS BASE
             // =====================================================
 
             $usuariosBase = [
@@ -56,21 +59,21 @@ class AcadeSysDemoSeeder extends Seeder
                         'apellido' => $data['apellido'],
                         'name' => "{$data['nombre']} {$data['apellido']}",
                         'password' => Hash::make('password123'),
-                        'dni' => fake()->unique()->numerify('########'),
-                        'telefono' => fake()->phoneNumber(),
+                        'dni' => $faker->unique()->numerify('########'),
+                        'telefono' => $faker->phoneNumber(),
                     ]
                 );
                 $user->assignRole($data['role']);
             }
 
             // =====================================================
-            // 👨‍🏫 PROFESORES ADICIONALES
+            // 👨‍🏫 PROFESORES EXTRA
             // =====================================================
 
             $profesores = collect();
             for ($i = 1; $i <= 4; $i++) {
-                $nombre = fake()->firstName('male');
-                $apellido = fake()->lastName();
+                $nombre = $faker->firstName('male');
+                $apellido = $faker->lastName();
 
                 $prof = User::firstOrCreate(
                     ['email' => "profesor$i@acadesys.test"],
@@ -79,8 +82,8 @@ class AcadeSysDemoSeeder extends Seeder
                         'apellido' => $apellido,
                         'name' => "$nombre $apellido",
                         'password' => Hash::make('password123'),
-                        'dni' => fake()->unique()->numerify('########'),
-                        'telefono' => fake()->phoneNumber(),
+                        'dni' => $faker->unique()->numerify('########'),
+                        'telefono' => $faker->phoneNumber(),
                     ]
                 );
                 $prof->assignRole('profesor');
@@ -88,13 +91,13 @@ class AcadeSysDemoSeeder extends Seeder
             }
 
             // =====================================================
-            // 🎓 ALUMNOS ADICIONALES
+            // 🎓 ALUMNOS EXTRA
             // =====================================================
 
             $alumnos = collect();
             for ($i = 1; $i <= 10; $i++) {
-                $nombre = fake()->firstName();
-                $apellido = fake()->lastName();
+                $nombre = $faker->firstName();
+                $apellido = $faker->lastName();
 
                 $alumno = User::firstOrCreate(
                     ['email' => "alumno$i@acadesys.test"],
@@ -103,8 +106,8 @@ class AcadeSysDemoSeeder extends Seeder
                         'apellido' => $apellido,
                         'name' => "$nombre $apellido",
                         'password' => Hash::make('password123'),
-                        'dni' => fake()->unique()->numerify('########'),
-                        'telefono' => fake()->phoneNumber(),
+                        'dni' => $faker->unique()->numerify('########'),
+                        'telefono' => $faker->phoneNumber(),
                     ]
                 );
                 $alumno->assignRole('alumno');
@@ -112,7 +115,7 @@ class AcadeSysDemoSeeder extends Seeder
             }
 
             // =====================================================
-            // 📘 CURSOS Y PROFESORES
+            // 📘 CURSOS
             // =====================================================
 
             $cursosData = [
@@ -149,7 +152,6 @@ class AcadeSysDemoSeeder extends Seeder
                     $cursoData
                 );
 
-                // Asignar 1 o 2 profesores al curso
                 $curso->profesores()->syncWithoutDetaching(
                     $profesores->random(rand(1, 2))->pluck('id')->toArray()
                 );
@@ -158,7 +160,7 @@ class AcadeSysDemoSeeder extends Seeder
             }
 
             // =====================================================
-            // 🧾 INSCRIPCIONES, PAGOS Y ASISTENCIAS
+            // 📄 INSCRIPCIONES + PAGOS + ASISTENCIAS
             // =====================================================
 
             foreach ($cursos as $curso) {
@@ -168,23 +170,28 @@ class AcadeSysDemoSeeder extends Seeder
                     $inscripcion = Inscripcion::firstOrCreate(
                         ['curso_id' => $curso->id, 'user_id' => $alumno->id],
                         [
-                            'estado' => fake()->randomElement(['pendiente', 'confirmada']),
-                            'origen' => fake()->randomElement(['landing', 'admin']),
+                            'estado' => $faker->randomElement(['pendiente', 'confirmada']),
+                            'origen' => $faker->randomElement(['landing', 'admin']),
                             'fecha_inscripcion' => now()->subDays(rand(1, 15)),
                             'monto_total' => $curso->arancel_base,
                         ]
                     );
 
-                    // PAGOS
+                    // PAGOS → Ahora con anulado/motivo
                     $numPagos = rand(1, 2);
                     for ($i = 0; $i < $numPagos; $i++) {
+
+                        $isAnulado = $faker->boolean(20);
+
                         Pago::create([
                             'inscripcion_id' => $inscripcion->id,
                             'monto' => $curso->arancel_base / 2,
                             'pagado_at' => now()->subDays(rand(1, 10)),
-                            'metodo_pago' => fake()->randomElement(['Efectivo', 'Transferencia', 'Tarjeta']),
+                            'metodo_pago' => $faker->randomElement(['Efectivo', 'Transferencia', 'Tarjeta']),
                             'administrativo_id' => User::role('administrativo')->inRandomOrder()->first()->id,
                             'user_id' => $alumno->id,
+                            'anulado' => $isAnulado,
+                            'motivo_anulacion' => $isAnulado ? $faker->sentence(4) : null,
                         ]);
                     }
 
@@ -197,15 +204,15 @@ class AcadeSysDemoSeeder extends Seeder
                                 'fecha' => now()->subDays(rand(1, 20))->format('Y-m-d'),
                             ],
                             [
-                                'presente' => fake()->boolean(80),
-                                'observacion' => fake()->optional()->sentence(3),
+                                'presente' => $faker->boolean(80),
+                                'observacion' => $faker->optional()->sentence(3),
                             ]
                         );
                     }
                 }
             }
 
-            $this->command->info('✅ Sistema AcadeSys poblado correctamente con datos completos de ejemplo.');
+            $this->command->info('✅ Sistema AcadeSys poblado correctamente (incluye pagos con anulación).');
         });
     }
 }

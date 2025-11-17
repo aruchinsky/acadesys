@@ -12,7 +12,7 @@ export default function Profesor() {
   const opciones = [
     { titulo: "Mis Cursos", descripcion: "Gestioná tus clases y alumnos.", icono: BookOpen, href: route("profesor.cursos.index") },
     { titulo: "Asistencias", descripcion: "Registrá la asistencia diaria.", icono: ClipboardList, href: route("asistencias.index") },
-    { titulo: "Pagos", descripcion: "Consultá pagos de tus cursos.", icono: FileText, href: route("pagos.index") },
+    // { titulo: "Pagos", descripcion: "Consultá pagos de tus cursos.", icono: FileText, href: route("pagos.index") },
   ]
   const stats = [
     { label: "Cursos asignados", value: 3, icon: BookOpen },

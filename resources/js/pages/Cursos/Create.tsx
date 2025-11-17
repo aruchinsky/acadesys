@@ -58,6 +58,15 @@ export default function Create({ profesores }: pageProps & { profesores: User[] 
     )
   }
 
+  const duplicateHorario = (index: number) => {
+    const item = data.horarios[index];
+    setData("horarios", [
+      ...data.horarios,
+      { ...item }
+    ]);
+  };
+
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     post(route("cursos.store"))
@@ -71,6 +80,10 @@ export default function Create({ profesores }: pageProps & { profesores: User[] 
       transition: { delay: i * 0.04 },
     }),
   }
+
+  const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+  const SALAS = ["Sala 1", "Sala 2", "Sala 3", "Laboratorio", "Aula Virtual"];
+
 
   return (
     <AppLayout
@@ -242,16 +255,28 @@ export default function Create({ profesores }: pageProps & { profesores: User[] 
                   custom={i}
                   className="grid grid-cols-2 md:grid-cols-5 gap-2 items-end border-b border-border/40 pb-3 mb-3"
                 >
-                  <div>
-                    <Label>Día</Label>
-                    <Input
-                      value={h.dia_en_texto}
-                      onChange={(e) =>
-                        setData("horarios", data.horarios.map((v, idx) => idx === i ? { ...v, dia_en_texto: e.target.value } : v))
-                      }
-                      placeholder="Ej. Lunes"
-                    />
-                  </div>
+                <div>
+                  <Label>Día</Label>
+                  <Select
+                    value={h.dia_en_texto}
+                    onValueChange={(v) =>
+                      setData("horarios", data.horarios.map((v2, idx) =>
+                        idx === i ? { ...v2, dia_en_texto: v } : v2
+                      ))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar día" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DIAS.map((dia) => (
+                        <SelectItem key={dia} value={dia}>
+                          {dia}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                   <div>
                     <Label>Inicio</Label>
                     <Input
@@ -274,12 +299,25 @@ export default function Create({ profesores }: pageProps & { profesores: User[] 
                   </div>
                   <div>
                     <Label>Sala</Label>
-                    <Input
+                    <Select
                       value={h.sala}
-                      onChange={(e) =>
-                        setData("horarios", data.horarios.map((v, idx) => idx === i ? { ...v, sala: e.target.value } : v))
+                      onValueChange={(v) =>
+                        setData("horarios", data.horarios.map((v2, idx) =>
+                          idx === i ? { ...v2, sala: v } : v2
+                        ))
                       }
-                    />
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar sala" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SALAS.map((sala) => (
+                          <SelectItem key={sala} value={sala}>
+                            {sala}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <Label>Turno</Label>
@@ -297,7 +335,16 @@ export default function Create({ profesores }: pageProps & { profesores: User[] 
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="col-span-2 md:col-span-5 flex justify-end">
+                  <div className="col-span-2 md:col-span-5 flex justify-end gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => duplicateHorario(i)}
+                    >
+                      <PlusCircle className="h-4 w-4 mr-1" /> Duplicar
+                    </Button>
+
                     <Button
                       type="button"
                       size="sm"

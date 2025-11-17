@@ -61,4 +61,9 @@ class Inscripcion extends Model
         return $this->usuario?->nombre_completo;
     }
 
+    public function alumno()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
 }

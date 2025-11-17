@@ -15,6 +15,8 @@ class Pago extends Model
         'monto',
         'pagado_at',
         'metodo_pago',
+        'anulado',
+        'motivo_anulacion',
         'administrativo_id'
     ];
 

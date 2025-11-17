@@ -94,7 +94,7 @@ export interface Curso {
   arancel_base: number
   modalidad: "Presencial" | "Virtual"
   activo: boolean
-  inscripciones_count?: number
+  inscripciones_count: number
   created_at: string
   updated_at: string
 
@@ -132,6 +132,8 @@ export interface Pago {
   monto: number
   pagado_at: string
   metodo_pago: MetodoPago
+  anulado: boolean
+  motivo_anulacion?: string | null
   administrativo_id: number | null
   created_at: string
   updated_at: string

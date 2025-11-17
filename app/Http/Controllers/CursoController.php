@@ -194,11 +194,14 @@ class CursoController extends Controller
         $user = Auth::user();
 
         // Cursos donde el alumno ESTÁ inscripto (usando la relación belongsToMany del User)
-        $cursos = $user->cursos()
+        $cursos = Curso::query()
+            ->whereHas('inscripciones', function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                ->where('estado', 'confirmada');
+            })
             ->with([
                 'profesores:id,nombre,apellido',
                 'horarios:id,curso_id,dia_en_texto,hora_inicio,duracion_min,sala,turno',
-                // Trae la propia inscripción + asistencias del alumno (para % de asistencia)
                 'inscripciones' => function ($q) use ($user) {
                     $q->select('id','user_id','curso_id','estado','fecha_inscripcion','origen')
                     ->where('user_id', $user->id)
@@ -208,6 +211,7 @@ class CursoController extends Controller
             ->withCount('inscripciones')
             ->orderBy('fecha_inicio','asc')
             ->get();
+
 
         return Inertia::render('Cursos/AlumnoMisCursos', [
             'cursos' => $cursos,

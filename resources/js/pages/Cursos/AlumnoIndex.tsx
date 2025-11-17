@@ -1,4 +1,4 @@
-import { Head, Link, usePage } from "@inertiajs/react"
+import { Head, Link, router, usePage } from "@inertiajs/react"
 import AppLayout from "@/layouts/app-layout"
 import { Curso, Inscripcion, pageProps } from "@/types"
 import { motion } from "framer-motion"
@@ -86,13 +86,37 @@ export default function AlumnoIndex() {
                         )}
                       </div>
                     </CardContent>
-                    <div className="p-4 border-t border-border/30 flex justify-end">
-                        <Button asChild size="sm">
-                        <Link href={route("alumno.cursos.show", { curso: c.id, from: "disponibles" })}>
-                            Ver curso
-                        </Link>
+                    <div className="p-4 border-t border-border/30 flex justify-between">
+                      {!mi && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => router.post(route("cursos.preinscribir", c.id))}
+                        >
+                          Preinscribirme
                         </Button>
+                      )}
+
+                      {mi?.estado === "pendiente" && (
+                        <Button size="sm" variant="outline" disabled>
+                          Pendiente
+                        </Button>
+                      )}
+
+                      {mi?.estado === "rechazada" && (
+                        <Button size="sm" variant="destructive" disabled>
+                          Rechazada
+                        </Button>
+                      )}
+
+                      <Button asChild size="sm">
+                        <Link href={route("alumno.cursos.show", { curso: c.id, from: "disponibles" })}>
+                          Ver curso
+                        </Link>
+                      </Button>
+
                     </div>
+
                   </Card>
                 </motion.div>
               )

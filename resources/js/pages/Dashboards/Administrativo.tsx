@@ -1,4 +1,4 @@
-import { Head, Link } from "@inertiajs/react"
+import { Head, Link, router } from "@inertiajs/react"
 import AppLayout from "@/layouts/app-layout"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,7 +16,7 @@ export default function Administrativo() {
   }
 
   const opciones = [
-    { titulo: "Gestión de Pagos", icono: Wallet, href: route("pagos.index") },
+    { titulo: "Gestión de Pagos", icono: Wallet, href: route("administrativo.pagos.index") },
     { titulo: "Inscripciones", icono: ClipboardList, href: route("inscripciones.index") },
     { titulo: "Alumnos", icono: Users, href: route("usuarios.index") },
     { titulo: "Cursos", icono: BookOpen, href: route("cursos.index") },
@@ -52,6 +52,17 @@ export default function Administrativo() {
                 <Button asChild size="sm" className="w-full mt-1">
                   <Link href={op.href}>Ingresar</Link>
                 </Button>
+                  {/* SOLO PARA GESTIÓN DE PAGOS */}
+                {op.titulo === "Gestión de Pagos" && (
+                  <Button
+                    size="sm"
+                    variant={"secondary"}
+                    className="w-full"
+                    onClick={() => router.visit(route("administrativo.pagos.create"))}
+                  >
+                    + Generar Pago
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </motion.div>

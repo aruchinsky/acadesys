@@ -14,7 +14,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserRoleController;
 
 // ============================================================
-// PÁGINA PRINCIPAL PÚBLICA
+// 🏠 PÁGINA PRINCIPAL (PÚBLICA)
 // ============================================================
 
 Route::get('/', function () {
@@ -22,7 +22,7 @@ Route::get('/', function () {
 })->name('home');
 
 // ============================================================
-// ÁREA AUTENTICADA
+// 🔐 ÁREA AUTENTICADA
 // ============================================================
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -32,7 +32,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('dashboard');
 
     // ============================================================
-    // MÓDULOS ACADÉMICOS (ADMINISTRATIVOS / SUPERUSUARIO)
+    // 📚 MÓDULOS ACADÉMICOS (SUPERUSUARIO / ADMINISTRATIVO)
     // ============================================================
 
     // --- Cursos ---
@@ -45,41 +45,38 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->parameters(['inscripciones' => 'inscripcion'])
         ->middleware('role:superusuario|administrativo|profesor|alumno');
 
-    // --- Pagos ---
-    Route::resource('pagos', PagoController::class)
-        ->parameters(['pagos' => 'pago'])
-        ->middleware('role:superusuario|administrativo|alumno');
-
     // --- Asistencias ---
     Route::resource('asistencias', AsistenciaController::class)
         ->parameters(['asistencias' => 'asistencia'])
         ->middleware('role:superusuario|administrativo|profesor|alumno');
 
     // ============================================================
-    // ÁREA PROFESOR
+    // 👨‍🏫 ÁREA PROFESOR
     // ============================================================
-
     Route::middleware('role:superusuario|profesor')->group(function () {
-        // Mis cursos asignados
+
+        // Cursos asignados
         Route::get('/profesor/cursos', [CursoController::class, 'indexProfesor'])
             ->name('profesor.cursos.index');
 
         Route::get('/profesor/cursos/{curso}', [CursoController::class, 'showProfesor'])
             ->name('profesor.cursos.show');
 
-        // Asistencias del profesor
+        // Registrar asistencias
         Route::get('/profesor/asistencias', [AsistenciaController::class, 'index'])
             ->name('profesor.asistencias.index');
 
-        Route::get('profesor/cursos/{curso}/asistencias', [AsistenciaController::class, 'historial'])
+        // Historial
+        Route::get('/profesor/cursos/{curso}/asistencias', [AsistenciaController::class, 'historial'])
             ->name('profesor.asistencias.historial');
     });
 
     // ============================================================
-    // ÁREA ALUMNO
+    // 🎓 ÁREA ALUMNO
     // ============================================================
     Route::middleware('role:superusuario|alumno')->group(function () {
-        // Cursos
+
+        // Cursos disponibles y mis cursos
         Route::get('/alumno/cursos', [CursoController::class, 'alumnoIndex'])
             ->name('alumno.cursos.index');
 
@@ -89,56 +86,76 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/alumno/cursos/{curso}', [CursoController::class, 'alumnoShow'])
             ->name('alumno.cursos.show');
 
-        // 🔹 NUEVO: Pagos (placeholder hasta implementar el módulo)
-        Route::get('/alumno/pagos', function () {
-            return Inertia::render('Pagos/AlumnoIndex', [
-                'mensaje' => 'Módulo de pagos de alumno próximamente disponible.',
-            ]);
-        })->name('alumno.pagos.index');
-
-        // Asistencias (ya existentes)
+        // Asistencias del alumno
         Route::get('/alumno/asistencias', [AsistenciaController::class, 'index'])
             ->name('alumno.asistencias.index');
+
+        // Preinscripción a cursos
+        Route::post('/cursos/{id}/preinscribir', [InscripcionController::class, 'preinscribir'])
+            ->name('cursos.preinscribir');
+
+        // Pagos → Solo listado del alumno
+        Route::get('/alumno/pagos', [PagoController::class, 'index'])
+            ->name('alumno.pagos.index');
     });
 
-
-
     // ============================================================
-    // ÁREA ADMINISTRATIVO
+    // 🗂️ ÁREA ADMINISTRATIVO (ADMINISTRACIÓN ACADÉMICA)
     // ============================================================
-
     Route::middleware('role:superusuario|administrativo')->group(function () {
-        Route::get('/administrativo/pagos', [PagoController::class, 'index'])
-            ->name('administrativo.pagos.index');
+        // Pagos anulación
+        Route::post('/administrativo/pagos/{pago}/anular', [PagoController::class, 'anular'])
+            ->name('administrativo.pagos.anular');
+
+        // Inscripciones
         Route::get('/administrativo/inscripciones', [InscripcionController::class, 'index'])
             ->name('administrativo.inscripciones.index');
+
+        Route::post('/admin/inscripciones/{id}/aprobar', [InscripcionController::class, 'aprobar'])
+            ->name('admin.inscripciones.aprobar');
+
+        Route::post('/admin/inscripciones/{id}/rechazar', [InscripcionController::class, 'rechazar'])
+            ->name('admin.inscripciones.rechazar');
+
+        // Pagos (CRUD parcial)
+        Route::get('/administrativo/pagos', [PagoController::class, 'index'])
+            ->name('administrativo.pagos.index');
+
+        Route::get('/administrativo/pagos/create', [PagoController::class, 'create'])
+            ->name('administrativo.pagos.create');
+
+        Route::post('/administrativo/pagos', [PagoController::class, 'store'])
+            ->name('administrativo.pagos.store');
+
+        Route::delete('/administrativo/pagos/{pago}', [PagoController::class, 'destroy'])
+            ->name('administrativo.pagos.destroy');
     });
 });
 
 // ============================================================
-// ÁREA DE ADMINISTRACIÓN AVANZADA (solo superusuario)
+// 🛠️ ÁREA DE ADMINISTRACIÓN AVANZADA (SOLO SUPERUSUARIO)
 // ============================================================
 
 Route::middleware(['auth', 'verified', 'role:superusuario'])->group(function () {
 
-    // --- Gestión de Roles ---
+    // Roles
     Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
     Route::get('/roles/create', [RoleController::class, 'create'])->name('roles.create');
     Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
     Route::get('/roles/{role}/edit', [RoleController::class, 'edit'])->name('roles.edit');
     Route::put('/roles/{role}', [RoleController::class, 'update'])->name('roles.update');
 
-    // --- Asignación de roles a usuarios ---
+    // Asignación de roles a usuarios
     Route::get('/usuarios/roles', [UserRoleController::class, 'index'])->name('usuarios.roles.index');
     Route::put('/usuarios/roles', [UserRoleController::class, 'update'])->name('usuarios.roles.update');
 
-    // --- Gestión de Usuarios ---
+    // Gestión de usuarios
     Route::resource('usuarios', UserController::class)
         ->parameters(['usuarios' => 'usuario']);
 });
 
 // ============================================================
-// CONFIGURACIONES Y AUTENTICACIÓN
+// ⚙️ CONFIGURACIONES Y AUTENTICACIÓN
 // ============================================================
 
 require __DIR__ . '/settings.php';

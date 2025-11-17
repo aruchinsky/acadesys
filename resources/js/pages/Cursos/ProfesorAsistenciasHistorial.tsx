@@ -19,18 +19,22 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useState } from "react"
 import { formatFechaLocal } from "@/lib/utils"
 import { Link } from "@inertiajs/react"
 
 export default function ProfesorAsistenciasHistorial() {
-    const { curso, fechas } = (usePage().props as unknown) as {
-        curso: Curso
-        fechas: string[]
-    }
-
+  const { curso, fechas } = (usePage().props as unknown) as {
+    curso: Curso
+    fechas: string[]
+  }
 
   const [selectedAlumno, setSelectedAlumno] = useState<any | null>(null)
 
@@ -96,15 +100,32 @@ export default function ProfesorAsistenciasHistorial() {
               <table className="min-w-full table-auto text-sm">
                 <thead className="bg-muted text-muted-foreground">
                   <tr>
-                    <th className="px-4 py-2 text-left">Alumno</th>
-                    <th className="px-4 py-2 text-left">DNI</th>
+                      {/* ALUMNO HEADER (sticky) */}
+                      <th
+                        className="px-4 py-2 text-left bg-muted sticky left-0 z-40 border-r border-border/40 whitespace-nowrap"
+                        style={{ position: "sticky", left: 0 }}
+                      >
+                        Alumno
+                      </th>
+
+                      {/* DNI HEADER (sticky) */}
+                      <th
+                        className="px-4 py-2 text-left bg-muted sticky left-[160px] z-40 border-r border-border/40 whitespace-nowrap"
+                        style={{ position: "sticky", left: "160px" }}
+                      >
+                        DNI
+                      </th>
+
                     {fechas.map((f) => (
                       <th key={f} className="px-2 py-2 text-center min-w-[90px]">
                         {formatFechaLocal(f)}
                       </th>
                     ))}
+                    {/* NUEVA COLUMNA TOTAL */}
+                    <th className="px-4 py-2 text-center">Total</th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {curso.inscripciones.map((ins, i) => (
                     <motion.tr
@@ -115,8 +136,22 @@ export default function ProfesorAsistenciasHistorial() {
                       custom={i}
                       className="border-b hover:bg-accent/10 transition-colors"
                     >
-                      <td className="px-4 py-2 font-medium">{ins.usuario?.nombre_completo}</td>
-                      <td className="px-4 py-2">{ins.usuario?.dni}</td>
+                        {/* ALUMNO (sticky) */}
+                        <td
+                          className="px-4 py-2 font-medium bg-background sticky left-0 z-30 border-r border-border/40 whitespace-nowrap"
+                          style={{ position: "sticky", left: 0 }}
+                        >
+                          {ins.usuario?.nombre_completo}
+                        </td>
+
+                        {/* DNI (sticky) */}
+                        <td
+                          className="px-4 py-2 bg-background sticky left-[160px] z-20 border-r border-border/40 whitespace-nowrap"
+                          style={{ position: "sticky", left: "160px" }}
+                        >
+                          {ins.usuario?.dni}
+                        </td>
+
 
                       {fechas.map((f) => {
                         const asistencia = ins.asistencias?.find((a: any) => a.fecha === f)
@@ -131,9 +166,7 @@ export default function ProfesorAsistenciasHistorial() {
                                   <TooltipTrigger asChild>
                                     <div
                                       className={`flex justify-center items-center cursor-pointer ${
-                                        presente
-                                          ? "text-green-500"
-                                          : "text-red-500"
+                                        presente ? "text-green-500" : "text-red-500"
                                       }`}
                                       onClick={() =>
                                         setSelectedAlumno({
@@ -163,9 +196,49 @@ export default function ProfesorAsistenciasHistorial() {
                           </td>
                         )
                       })}
+
+                      {/* TOTAL POR ALUMNO */}
+                      <td className="px-4 py-2 font-semibold text-center">
+                        {(() => {
+                          const totalPresentes = fechas.filter((f) =>
+                            ins.asistencias?.some((a: any) => a.fecha === f && a.presente)
+                          ).length
+
+                          const totalFechas = fechas.length
+                          const porcentaje =
+                            totalFechas > 0
+                              ? Math.round((totalPresentes / totalFechas) * 100)
+                              : 0
+
+                          return `${totalPresentes}/${totalFechas} (${porcentaje}%)`
+                        })()}
+                      </td>
                     </motion.tr>
                   ))}
                 </tbody>
+
+                {/* TOTALES POR FECHA */}
+                <tfoot>
+                  <tr className="bg-accent/20 font-semibold">
+                    <td className="px-4 py-2">Totales</td>
+                    <td className="px-4 py-2">—</td>
+
+                    {fechas.map((f) => {
+                      const total = (curso.inscripciones ?? []).filter((ins: any) =>
+                        ins.asistencias?.some((a: any) => a.fecha === f && a.presente)
+                      ).length
+
+                      return (
+                        <td key={f} className="px-2 py-2 text-center text-primary font-bold">
+                          {total}
+                        </td>
+                      )
+                    })}
+
+                    <td className="px-4 py-2 text-center">—</td>
+                  </tr>
+                </tfoot>
+
               </table>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-4">

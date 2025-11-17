@@ -48,7 +48,7 @@ export function AppSidebar() {
       { title: "Roles y Permisos", href: route("roles.index"), icon: UserCog },
       { title: "Cursos", href: route("cursos.index"), icon: BookOpen },
       { title: "Inscripciones", href: route("inscripciones.index"), icon: ClipboardList },
-      { title: "Pagos", href: route("pagos.index"), icon: Wallet },
+      { title: "Pagos", href: route("administrativo.pagos.index"), icon: Wallet },
       { title: "Asistencias", href: route("asistencias.index"), icon: CheckCircle2 },
       { title: "Reportes", href: "#", icon: BarChart3 },
       { title: "Configuración", href: "#", icon: Settings2 },
@@ -60,7 +60,7 @@ export function AppSidebar() {
     mainNavItems.push(
       { title: "Cursos", href: route("cursos.index"), icon: BookOpen },
       { title: "Inscripciones", href: route("inscripciones.index"), icon: ClipboardList },
-      { title: "Pagos", href: route("pagos.index"), icon: Wallet },
+      { title: "Pagos", href: route("administrativo.pagos.index"), icon: Wallet },
       { title: "Asistencias", href: route("asistencias.index"), icon: CheckCircle2 },
       { title: "Reportes", href: "#", icon: BarChart3 },
     )
@@ -71,7 +71,7 @@ export function AppSidebar() {
     mainNavItems.push(
       { title: "Mis Cursos", href: route("profesor.cursos.index"), icon: BookOpen },
       { title: "Asistencias", href: route("profesor.asistencias.index"), icon: ClipboardList },
-      { title: "Pagos", href: route("pagos.index"), icon: Wallet },
+      // { title: "Pagos", href: route("pagos.index"), icon: Wallet },
     )
   }
 

@@ -1,4 +1,4 @@
-import { Head, Link, usePage } from "@inertiajs/react"
+import { Head, Link, usePage, router } from "@inertiajs/react"
 import AppLayout from "@/layouts/app-layout"
 import { Curso, Inscripcion, Asistencia, pageProps } from "@/types"
 import { motion } from "framer-motion"
@@ -52,7 +52,33 @@ export default function AlumnoShow() {
                 <ArrowLeft className="h-4 w-4 mr-1" /> Volver
             </Link>
             </Button>
+                    {/* BOTÓN DE PREINSCRIPCIÓN */}
+        <div className="flex justify-end">
+          {!miInscripcion && (
+            <Button
+              onClick={() => router.post(route("cursos.preinscribir", curso.id))}
+              className="bg-primary text-white"
+            >
+              Preinscribirme a este curso
+            </Button>
+          )}
+
+          {miInscripcion?.estado === "pendiente" && (
+            <Button disabled variant="secondary">
+              Inscripción pendiente de aprobación
+            </Button>
+          )}
+
+          {miInscripcion?.estado === "rechazada" && (
+            <Button variant="destructive" disabled>
+              Inscripción rechazada
+            </Button>
+          )}
         </div>
+        </div>
+
+
+
 
         {/* Info general */}
         <Card className="border border-border/50 shadow-sm">

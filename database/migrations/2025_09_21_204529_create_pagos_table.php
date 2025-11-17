@@ -20,6 +20,8 @@ return new class extends Migration
             $table->enum('metodo_pago', ['Efectivo','Transferencia','Tarjeta'])->default('Efectivo');
             $table->foreignId('administrativo_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete(); // si querés registrar quién pagó (no obligatorio)
+            $table->boolean('anulado')->default(false);
+            $table->string('motivo_anulacion')->nullable();
             $table->timestamps();
         });
     }

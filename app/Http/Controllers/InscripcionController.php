@@ -13,11 +13,19 @@ class InscripcionController extends Controller
 {
     public function index()
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        $inscripciones = $user->hasRole('alumno')
-            ? $user->inscripciones()->with('curso')->latest()->get()
-            : Inscripcion::with(['usuario', 'curso'])->latest()->get();
+        if ($user->hasRole('alumno')) {
+            $inscripciones = $user->inscripciones()
+                ->with('curso')
+                ->latest()
+                ->get();
+        } else {
+            $inscripciones = Inscripcion::with(['alumno', 'curso'])
+                ->latest()
+                ->get();
+        }
 
         return Inertia::render('Inscripciones/Index', [
             'inscripciones' => $inscripciones,
@@ -34,6 +42,7 @@ class InscripcionController extends Controller
 
     public function store(Request $request)
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         $validated = $request->validate([
@@ -48,6 +57,18 @@ class InscripcionController extends Controller
         } else {
             $validated['estado'] = 'confirmada';
             $validated['origen'] = 'admin';
+
+            if (!isset($validated['user_id'])) {
+                return back()->with('error', 'Debe seleccionar un alumno.');
+            }
+        }
+
+        $existe = Inscripcion::where('user_id', $validated['user_id'])
+            ->where('curso_id', $validated['curso_id'])
+            ->first();
+
+        if ($existe) {
+            return back()->with('error', 'Ya existe una inscripción para este curso.');
         }
 
         Inscripcion::create($validated);
@@ -65,7 +86,7 @@ class InscripcionController extends Controller
         $inscripcion->update($validated);
 
         return redirect()->route('inscripciones.index')
-            ->with('success', 'Estado actualizado correctamente.');
+            ->with('success', 'Estado actualizado.');
     }
 
     public function destroy(Inscripcion $inscripcion)
@@ -73,6 +94,56 @@ class InscripcionController extends Controller
         $inscripcion->delete();
 
         return redirect()->route('inscripciones.index')
-            ->with('success', 'Inscripción eliminada correctamente.');
+            ->with('success', 'Inscripción eliminada.');
+    }
+
+    // ============================================
+    // 🔹 MÉTODO DE PREINSCRIPCIÓN (ALUMNO)
+    // ============================================
+    public function preinscribir($cursoId)
+    {
+        $user = Auth::user();
+
+        // Evitar duplicados
+        $existe = Inscripcion::where('user_id', $user->id)
+            ->where('curso_id', $cursoId)
+            ->first();
+
+        if ($existe) {
+            return back()->with('error', 'Ya tienes una inscripción (pendiente o confirmada) para este curso.');
+        }
+
+        Inscripcion::create([
+            'user_id' => $user->id,
+            'curso_id' => $cursoId,
+            'estado' => 'pendiente',
+            'origen' => 'landing',
+        ]);
+
+        return back()->with('success', '¡Preinscripción enviada! Un administrador la revisará.');
+    }
+
+    // ============================================
+    // 🔹 ADMINISTRADOR APRUEBA INSCRIPCIÓN
+    // ============================================
+    public function aprobar($id)
+    {
+        $inscripcion = Inscripcion::findOrFail($id);
+        $inscripcion->estado = 'confirmada';
+        $inscripcion->save();
+
+        return back()->with('success', 'Inscripción aprobada.');
+    }
+
+    // ============================================
+    // 🔹 ADMINISTRADOR RECHAZA INSCRIPCIÓN
+    // ============================================
+    public function rechazar($id)
+    {
+        $inscripcion = Inscripcion::findOrFail($id);
+        $inscripcion->estado = 'rechazada';
+        $inscripcion->save();
+
+        return back()->with('success', 'Inscripción rechazada.');
     }
 }
