@@ -126,13 +126,22 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             </Button>
                         </div>
 
-                        {/* Enlace para registrarse */}
-                        <div className="text-center text-sm text-muted-foreground">
+                        {/* Enlace para registrarse (deshabilitado) */}
+                        <div className="text-center text-sm text-muted-foreground mt-4">
                             ¿No tenés una cuenta?{' '}
-                            <TextLink href={route('register')} tabIndex={6}>
+                            <button
+                                type="button"
+                                disabled
+                                className="cursor-not-allowed text-primary/60 underline relative group"
+                            >
                                 Registrate
-                            </TextLink>
+                                {/* Tooltip Próximamente */}
+                                <span className="absolute left-1/2 top-full -translate-x-1/2 mt-1 rounded-md bg-primary px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition">
+                                    Próximamente
+                                </span>
+                            </button>
                         </div>
+
                     </>
                 )}
             </Form>

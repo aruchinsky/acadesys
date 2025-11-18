@@ -97,6 +97,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Pagos → Solo listado del alumno
         Route::get('/alumno/pagos', [PagoController::class, 'index'])
             ->name('alumno.pagos.index');
+
+        Route::get('/alumno/asistencias', [AsistenciaController::class, 'alumnoIndex'])
+            ->name('alumno.asistencias.index');
     });
 
     // ============================================================

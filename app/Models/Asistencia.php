@@ -17,7 +17,7 @@ class Asistencia extends Model
     ];
 
     protected $casts = [
-        'fecha' => 'date',
+        // 'fecha' => 'date',
         'presente' => 'boolean'
     ];
 

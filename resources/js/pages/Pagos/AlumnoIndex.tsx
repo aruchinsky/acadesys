@@ -13,25 +13,42 @@ import {
   DollarSign,
   ShieldCheck,
 } from "lucide-react"
+
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { useMemo, useState } from "react"
-import { formatFechaLocal } from "@/lib/utils"
 
-export default function AdminIndex() {
+function formatFechaLocal(fechaString: string) {
+  if (!fechaString) return "—"
+
+  // 1) Intento directo estándar (compatible con la mayoría de navegadores)
+  let fecha = new Date(fechaString)
+
+  // 2) Si falla → crearla manualmente
+  if (isNaN(fecha.getTime())) {
+    const [fechaPart] = fechaString.split(" ")
+    const [y, m, d] = fechaPart.split("-")
+
+    fecha = new Date(Number(y), Number(m) - 1, Number(d))
+  }
+
+  // 3) Si sigue fallando → fallback de emergencia
+  if (isNaN(fecha.getTime())) {
+    return "Fecha inválida"
+  }
+
+  return fecha.toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  })
+}
+
+
+export default function AlumnoIndex() {
   const { pagos = [], auth } = usePage<pageProps>().props as pageProps & {
     pagos: Pago[]
   }
@@ -51,32 +68,27 @@ export default function AdminIndex() {
     }),
   }
 
+  // FILTRADO
   const filteredPagos = useMemo(() => {
     if (!search.trim()) return pagos
 
     const term = search.toLowerCase()
+
     return pagos.filter((p) => {
-      const alumno =
-        p.inscripcion?.usuario?.nombre_completo?.toLowerCase() ?? ""
       const curso = p.inscripcion?.curso?.nombre?.toLowerCase() ?? ""
       const metodo = p.metodo_pago?.toLowerCase() ?? ""
-      return (
-        alumno.includes(term) ||
-        curso.includes(term) ||
-        metodo.includes(term)
-      )
+      const fecha = formatFechaLocal(p.pagado_at)?.toLowerCase() ?? ""
+
+      return curso.includes(term) || metodo.includes(term) || fecha.includes(term)
     })
   }, [pagos, search])
 
-  const totalMonto = useMemo(
-    () =>
-      filteredPagos.reduce((acc, p) => {
-        const montoNum = Number(p.monto ?? 0)
-        return acc + (isNaN(montoNum) ? 0 : montoNum)
-      }, 0),
-    [filteredPagos]
-  )
-
+  // TOTAL — solo pagos NO anulados
+  const totalMonto = useMemo(() => {
+    return filteredPagos
+      .filter((p) => !p.anulado)
+      .reduce((acc, p) => acc + Number(p.monto ?? 0), 0)
+  }, [filteredPagos])
 
   const handleDelete = (id: number) => {
     router.delete(route("administrativo.pagos.destroy", id))
@@ -87,14 +99,11 @@ export default function AdminIndex() {
       "bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200"
 
     if (metodo === "Efectivo")
-      classes =
-        "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+      classes = "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
     if (metodo === "Transferencia")
-      classes =
-        "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+      classes = "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
     if (metodo === "Tarjeta")
-      classes =
-        "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
+      classes = "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
 
     return <Badge className={`text-xs ${classes}`}>{metodo}</Badge>
   }
@@ -102,9 +111,7 @@ export default function AdminIndex() {
   const breadcrumbs = [
     {
       title: isAlumno ? "Mis pagos" : "Pagos",
-      href: isAlumno
-        ? route("alumno.pagos.index")
-        : route("administrativo.pagos.index"),
+      href: isAlumno ? route("alumno.pagos.index") : route("administrativo.pagos.index"),
     },
   ]
 
@@ -112,12 +119,9 @@ export default function AdminIndex() {
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title={isAlumno ? "Mis pagos" : "Gestión de pagos"} />
 
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="p-4 flex flex-col gap-6"
-      >
-        {/* ENCABEZADO + RESUMEN */}
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-4 flex flex-col gap-6">
+
+        {/* HEADER */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <h1 className="text-2xl font-semibold flex items-center gap-2 text-foreground">
@@ -127,7 +131,7 @@ export default function AdminIndex() {
             <p className="text-sm text-muted-foreground">
               {isAlumno
                 ? "Aquí podés consultar los pagos registrados de tus cursos."
-                : "Listado de pagos registrados en el sistema, filtrados por curso, alumno y método de pago."}
+                : "Listado general filtrable."}
             </p>
           </div>
 
@@ -138,16 +142,13 @@ export default function AdminIndex() {
                 {isAlumno ? "Total abonado" : "Total cobrado"}
               </span>
               <span className="text-lg font-semibold">
-                {totalMonto.toLocaleString("es-AR", {
-                  style: "currency",
-                  currency: "ARS",
-                })}
+                {totalMonto.toLocaleString("es-AR", { style: "currency", currency: "ARS" })}
               </span>
             </CardContent>
           </Card>
         </div>
 
-        {/* FILTROS / BUSCADOR */}
+        {/* FILTROS */}
         <Card>
           <CardHeader>
             <CardTitle className="text-sm flex items-center gap-2">
@@ -155,25 +156,25 @@ export default function AdminIndex() {
               Filtros rápidos
             </CardTitle>
           </CardHeader>
+
           <CardContent className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1">
-              <div className="text-xs text-muted-foreground mb-1">
-                Buscar por alumno, curso o método de pago
-              </div>
-              <div className="relative">
-                <Search className="h-4 w-4 absolute left-2 top-2.5 text-muted-foreground" />
-                <Input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Ej: Juan Pérez, Programación, Transferencia..."
-                  className="pl-8"
-                />
-              </div>
+            <div className="flex-1 relative">
+              <Search className="h-4 w-4 absolute left-2 top-2.5 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={
+                  isAlumno
+                    ? "Buscar por curso, método o fecha…"
+                    : "Buscar por alumno, curso o método…"
+                }
+                className="pl-8"
+              />
             </div>
           </CardContent>
         </Card>
 
-        {/* TABLA DE PAGOS */}
+        {/* TABLA */}
         <Card className="border border-border/40 shadow-sm overflow-x-auto">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
@@ -181,6 +182,7 @@ export default function AdminIndex() {
               {isAlumno ? "Detalle de mis pagos" : "Listado de pagos registrados"}
             </CardTitle>
           </CardHeader>
+
           <CardContent>
             {filteredPagos.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
@@ -193,25 +195,16 @@ export default function AdminIndex() {
                 <thead className="bg-muted text-muted-foreground">
                   <tr>
                     <th className="px-4 py-2 text-left">ID</th>
-
-                    {!isAlumno && (
-                      <th className="px-4 py-2 text-left">Alumno</th>
-                    )}
-
+                    {!isAlumno && <th className="px-4 py-2 text-left">Alumno</th>}
                     <th className="px-4 py-2 text-left">Curso</th>
                     <th className="px-4 py-2 text-left">Monto</th>
                     <th className="px-4 py-2 text-left">Fecha</th>
-                    <th className="px-4 py-2 text-left">Método</th>
-
-                    {!isAlumno && (
-                      <th className="px-4 py-2 text-left">Registrado por</th>
-                    )}
-
-                    {isAdminLike && (
-                      <th className="px-4 py-2 text-left">Acciones</th>
-                    )}
+                    <th className="px-4 py-2 text-left">Método / Estado</th>
+                    {!isAlumno && <th className="px-4 py-2 text-left">Registrado por</th>}
+                    {isAdminLike && <th className="px-4 py-2 text-left">Acciones</th>}
                   </tr>
                 </thead>
+
                 <tbody>
                   {filteredPagos.map((pago, i) => (
                     <motion.tr
@@ -222,30 +215,25 @@ export default function AdminIndex() {
                       custom={i}
                       className="border-b hover:bg-accent/10 transition-colors"
                     >
-                      <td className="px-4 py-2 align-middle">{pago.id}</td>
+                      <td className="px-4 py-2">{pago.id}</td>
 
-                      {/* Alumno (solo admin/super) */}
                       {!isAlumno && (
-                        <td className="px-4 py-2 align-middle">
+                        <td className="px-4 py-2">
                           <div className="flex items-center gap-2">
                             <User2 className="h-4 w-4 text-muted-foreground" />
-                            <span>
-                              {pago.inscripcion?.usuario?.nombre_completo ??
-                                "—"}
-                            </span>
+                            {pago.inscripcion?.usuario?.nombre_completo ?? "—"}
                           </div>
                         </td>
                       )}
 
-                      {/* Curso */}
-                      <td className="px-4 py-2 align-middle">
+                      <td className="px-4 py-2">
                         <div className="flex items-center gap-2">
                           <BookOpen className="h-4 w-4 text-muted-foreground" />
-                          <span>{pago.inscripcion?.curso?.nombre ?? "—"}</span>
+                          {pago.inscripcion?.curso?.nombre ?? "—"}
                         </div>
                       </td>
 
-                      <td className="px-4 py-2 align-middle">
+                      <td className="px-4 py-2">
                         {pago.anulado ? (
                           <span className="line-through text-red-500/70">
                             {pago.monto.toLocaleString("es-AR", { style: "currency", currency: "ARS" })}
@@ -257,21 +245,14 @@ export default function AdminIndex() {
                         )}
                       </td>
 
-
-                      {/* Fecha */}
-                      <td className="px-4 py-2 align-middle">
+                      <td className="px-4 py-2">
                         <div className="flex items-center gap-2">
                           <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                          <span>
-                            {pago.pagado_at
-                              ? formatFechaLocal(pago.pagado_at)
-                              : "—"}
-                          </span>
+                          {formatFechaLocal(pago.pagado_at)}
                         </div>
                       </td>
 
-                      {/* BADGE ANULADO (ALUMNO TAMBIÉN VE ESTADO) */}
-                      <td className="px-4 py-2 align-middle">
+                      <td className="px-4 py-2">
                         {pago.anulado ? (
                           <Badge className="bg-red-200 text-red-800 dark:bg-red-900/40 dark:text-red-300">
                             ANULADO
@@ -281,55 +262,38 @@ export default function AdminIndex() {
                         )}
                       </td>
 
-
-                      {/* Administrativo que lo registró (solo admin/super) */}
                       {!isAlumno && (
-                        <td className="px-4 py-2 align-middle">
-                          {pago.administrativo ? (
-                            <span>{pago.administrativo.nombre_completo}</span>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
+                        <td className="px-4 py-2">
+                          {pago.administrativo?.nombre_completo ?? "—"}
                         </td>
                       )}
 
-                      {/* Acciones (solo admin/super) */}
                       {isAdminLike && (
-                        <td className="px-4 py-2 align-middle">
+                        <td className="px-4 py-2">
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                className="flex items-center gap-1"
-                              >
+                              <Button size="sm" variant="destructive">
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </AlertDialogTrigger>
+
                             <AlertDialogContent>
                               <AlertDialogHeader>
                                 <AlertDialogTitle className="flex items-center gap-2">
                                   <AlertTriangle className="h-5 w-5 text-red-500" />
                                   Eliminar pago
                                 </AlertDialogTitle>
+
                                 <AlertDialogDescription>
-                                  ¿Seguro que deseas eliminar este pago de{" "}
-                                  <strong>
-                                    {pago.inscripcion?.usuario
-                                      ?.nombre_completo ?? "este alumno"}
-                                  </strong>{" "}
-                                  del curso{" "}
-                                  <strong>
-                                    {pago.inscripcion?.curso?.nombre ?? "—"}
-                                  </strong>
-                                  ? Esta acción no se puede deshacer.
+                                  ¿Seguro que deseas eliminar este pago?
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
+
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => handleDelete(pago.id)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  className="bg-destructive"
                                 >
                                   Eliminar
                                 </AlertDialogAction>

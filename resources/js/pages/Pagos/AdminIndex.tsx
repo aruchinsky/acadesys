@@ -28,8 +28,33 @@ import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { useMemo, useState } from "react"
-import { formatFechaLocal } from "@/lib/utils"
 import { Toast } from "@/components/toast-provider"
+
+/* ------------------------------------------------------------
+   FUNCIÓN ROBUSTA PARA FECHAS — evita "Invalid Date"
+------------------------------------------------------------ */
+function formatFechaLocal(fechaString: string) {
+  if (!fechaString) return "—"
+
+  // 1) intento normal
+  let fecha = new Date(fechaString)
+
+  // 2) si falla, crearla manualmente
+  if (isNaN(fecha.getTime())) {
+    const [fechaPart] = fechaString.split(" ")
+    const [y, m, d] = fechaPart.split("-")
+    fecha = new Date(Number(y), Number(m) - 1, Number(d))
+  }
+
+  // 3) fallback final
+  if (isNaN(fecha.getTime())) return "Fecha inválida"
+
+  return fecha.toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  })
+}
 
 export default function AdminIndex() {
   const { pagos = [] } = usePage<pageProps>().props as pageProps & {
@@ -54,14 +79,13 @@ export default function AdminIndex() {
     }),
   }
 
-  // FILTRADO PRINCIPAL
+  // FILTRO PRINCIPAL
   const filteredPagos = useMemo(() => {
     if (!search.trim()) return pagos
 
     const term = search.toLowerCase()
     return pagos.filter((p) => {
-      const alumno =
-        p.inscripcion?.usuario?.nombre_completo?.toLowerCase() ?? ""
+      const alumno = p.inscripcion?.usuario?.nombre_completo?.toLowerCase() ?? ""
       const curso = p.inscripcion?.curso?.nombre?.toLowerCase() ?? ""
       const metodo = p.metodo_pago?.toLowerCase() ?? ""
 
@@ -73,7 +97,7 @@ export default function AdminIndex() {
     })
   }, [pagos, search])
 
-  // TOTAL — corregido (Number() para evitar concatenaciones)
+  // TOTAL sin anulados
   const totalMonto = useMemo(() => {
     return filteredPagos
       .filter((p) => !p.anulado)
@@ -108,51 +132,47 @@ export default function AdminIndex() {
         animate={{ opacity: 1, y: 0 }}
         className="p-4 flex flex-col gap-6"
       >
-      {/* HEADER */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        
-        {/* TITULO */}
-        <div>
-          <h1 className="text-2xl font-semibold flex items-center gap-2 text-foreground">
-            <CreditCard className="h-6 w-6 text-primary" /> Gestión de pagos
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Pagos registrados, filtrados y anulados.
-          </p>
+        {/* HEADER */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold flex items-center gap-2 text-foreground">
+              <CreditCard className="h-6 w-6 text-primary" /> Gestión de pagos
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Pagos registrados, filtrados y anulados.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* TOTAL */}
+            <Card className="sm:w-64 border border-border/60 shadow-sm">
+              <CardContent className="py-3 px-4">
+                <span className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-1">
+                  <DollarSign className="h-3 w-3" />
+                  Total cobrado
+                </span>
+                <span className="text-lg font-bold">
+                  {totalMonto.toLocaleString("es-AR", {
+                    style: "currency",
+                    currency: "ARS",
+                  })}
+                </span>
+              </CardContent>
+            </Card>
+
+            {/* BOTÓN GENERAR PAGO */}
+            {isAdminLike && (
+              <Button
+                onClick={() =>
+                  router.visit(route("administrativo.pagos.create"))
+                }
+                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
+              >
+                + Generar pago
+              </Button>
+            )}
+          </div>
         </div>
-
-        {/* RESUMEN + BOTÓN */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-
-          {/* TARJETA TOTAL */}
-          <Card className="sm:w-64 border border-border/60 shadow-sm">
-            <CardContent className="py-3 px-4">
-              <span className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-1">
-                <DollarSign className="h-3 w-3" />
-                Total cobrado
-              </span>
-              <span className="text-lg font-bold">
-                {totalMonto.toLocaleString("es-AR", {
-                  style: "currency",
-                  currency: "ARS",
-                })}
-              </span>
-            </CardContent>
-          </Card>
-
-          {/* BOTÓN GENERAR PAGO */}
-          {isAdminLike && (
-            <Button
-              onClick={() => router.visit(route("administrativo.pagos.create"))}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
-            >
-              + Generar pago
-            </Button>
-          )}
-
-        </div>
-      </div>
-
 
         {/* FILTROS */}
         <Card>
@@ -239,15 +259,11 @@ export default function AdminIndex() {
                           {pago.anulado ? (
                             <div className="flex flex-col">
                               <span className="line-through text-red-500/70 font-medium">
-                                {Number(pago.monto).toLocaleString(
-                                  "es-AR",
-                                  {
-                                    style: "currency",
-                                    currency: "ARS",
-                                  }
-                                )}
+                                {Number(pago.monto).toLocaleString("es-AR", {
+                                  style: "currency",
+                                  currency: "ARS",
+                                })}
                               </span>
-
                               {mostrarAnulados &&
                                 pago.motivo_anulacion && (
                                   <span className="text-xs text-red-400 mt-1 italic">
@@ -266,9 +282,7 @@ export default function AdminIndex() {
                         </td>
 
                         <td className="px-4 py-2">
-                          {pago.pagado_at
-                            ? formatFechaLocal(pago.pagado_at)
-                            : "—"}
+                          {formatFechaLocal(pago.pagado_at)}
                         </td>
 
                         <td className="px-4 py-2">
@@ -306,8 +320,8 @@ export default function AdminIndex() {
                                     </AlertDialogTitle>
                                     <AlertDialogDescription>
                                       Debes ingresar un{" "}
-                                      <strong>motivo</strong> para anular
-                                      este pago.
+                                      <strong>motivo</strong> para anular este
+                                      pago.
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
 
@@ -334,7 +348,6 @@ export default function AdminIndex() {
                                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                       onClick={() => {
                                         const motivo = motivos[pago.id]
-
                                         if (
                                           !motivo ||
                                           motivo.trim().length < 5

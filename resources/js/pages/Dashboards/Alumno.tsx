@@ -30,7 +30,7 @@ export default function Alumno() {
       href: route("alumno.pagos.index"),
     },
     {
-      titulo: "Asistencias",
+      titulo: "Mis Asistencias",
       descripcion: "Revisá tus registros de asistencia.",
       icono: ClipboardList,
       href: route("alumno.asistencias.index"),

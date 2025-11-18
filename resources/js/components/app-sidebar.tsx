@@ -81,7 +81,7 @@ export function AppSidebar() {
       { title: "Cursos disponibles", href: route("alumno.cursos.index"), icon: GraduationCap },
       { title: "Mis Cursos", href: route("alumno.mis-cursos.index"), icon: BookOpen },
       { title: "Pagos", href: route("alumno.pagos.index"), icon: Wallet },
-      { title: "Asistencias", href: route("alumno.asistencias.index"), icon: ClipboardList },
+      { title: "Mis Asistencias", href: route("alumno.asistencias.index"), icon: ClipboardList },
     )
   }
 

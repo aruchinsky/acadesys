@@ -94,4 +94,24 @@ class AsistenciaController extends Controller
         ]);
     }
 
+    public function alumnoIndex()
+    {
+        $user = Auth::user();
+
+        // Obtener solo inscripciones del alumno con cursos y asistencias
+        $inscripciones = \App\Models\Inscripcion::where('user_id', $user->id)
+            ->where('estado', 'confirmada')
+            ->with([
+                'curso:id,nombre,fecha_inicio,fecha_fin',
+                'asistencias' => fn($q) => $q->orderBy('fecha', 'asc')
+            ])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return Inertia::render('Asistencias/AlumnoAsistencia', [
+            'inscripciones' => $inscripciones
+        ]);
+    }
+
+
 }
