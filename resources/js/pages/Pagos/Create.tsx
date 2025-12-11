@@ -56,10 +56,12 @@ export default function Create() {
 
   const cursoSeleccionado = inscripcionSeleccionada?.curso
 
+  // VALIDACIÓN
   const handleSubmit = () => {
-    if (!inscripcionId || !monto) {
-      return Toast.error("Debes completar todos los campos obligatorios.")
-    }
+    if (!alumnoId) return Toast.error("Debes seleccionar un alumno.")
+    if (!inscripcionId) return Toast.error("Debes seleccionar un curso.")
+    if (!monto) return Toast.error("Debes ingresar un monto.")
+    if (Number(monto) < 1) return Toast.error("El monto debe ser mayor a 0.")
 
     router.post(
       route("administrativo.pagos.store"),
@@ -72,6 +74,23 @@ export default function Create() {
       { preserveScroll: true }
     )
   }
+
+  // ---------------------------------------------
+// 🗓️ FORMATEADOR DE FECHA CORTA
+// ---------------------------------------------
+const formatFecha = (fechaString?: string) => {
+  if (!fechaString) return "—"
+
+  const fecha = new Date(fechaString)
+  if (isNaN(fecha.getTime())) return "—"
+
+  return fecha.toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  })
+}
+
 
   return (
     <AppLayout
@@ -87,13 +106,23 @@ export default function Create() {
         animate={{ opacity: 1, y: 0 }}
         className="p-4 flex flex-col gap-6"
       >
-        {/* ENCABEZADO DE PÁGINA */}
-        <div className="flex items-center gap-3">
-          <CreditCard className="h-7 w-7 text-primary" />
-          <h1 className="text-3xl font-semibold">Registrar pago</h1>
+        {/* ENCABEZADO */}
+        <div className="flex flex-wrap items-center gap-3 justify-between">
+          <div className="flex items-center gap-3">
+            <CreditCard className="h-7 w-7 text-primary" />
+            <h1 className="text-3xl font-semibold">Registrar pago presencial</h1>
+          </div>
+
+          <Button
+            variant="outline"
+            onClick={() => router.visit(route("administrativo.pagos.index"))}
+            className="flex items-center gap-2 w-fit"
+          >
+            ← Volver
+          </Button>
         </div>
 
-        {/* TARJETA PRINCIPAL */}
+        {/* CARD PRINCIPAL */}
         <Card className="border border-border shadow-sm w-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
@@ -101,13 +130,13 @@ export default function Create() {
               Datos del pago
             </CardTitle>
             <CardDescription>
-              Completa los datos necesarios para registrar un nuevo pago en el sistema.
+              Completa la información necesaria para registrar un pago presencial en el sistema.
             </CardDescription>
           </CardHeader>
 
           <CardContent className="grid gap-8">
 
-            {/* BLOQUE 1 — ALUMNO + CURSO */}
+            {/* ALUMNO + CURSO */}
             <div className="grid md:grid-cols-2 gap-6">
               {/* ALUMNO */}
               <div className="grid gap-2">
@@ -130,7 +159,7 @@ export default function Create() {
                 </Select>
               </div>
 
-              {/* INSCRIPCIÓN */}
+              {/* CURSO */}
               <div className="grid gap-2">
                 <Label className="font-medium flex items-center gap-2">
                   <BookOpen className="h-4 w-4 text-primary" />
@@ -156,52 +185,53 @@ export default function Create() {
               </div>
             </div>
 
-            {/* BLOQUE INFO EXTRA */}
-            {cursoSeleccionado && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="p-4 rounded-md border bg-muted/40 grid gap-2 text-sm"
-              >
-                <div className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-primary" />
-                  <strong>{cursoSeleccionado.nombre}</strong>
-                </div>
+{/* DETALLE DEL CURSO */}
+{cursoSeleccionado && (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    className="p-4 rounded-md border bg-muted/40 grid gap-2 text-sm"
+  >
+    <div className="flex items-center gap-2">
+      <BookOpen className="h-4 w-4 text-primary" />
+      <strong>{cursoSeleccionado.nombre}</strong>
+    </div>
 
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <CalendarDays className="h-4 w-4" />
-                  Fecha inicio: {cursoSeleccionado.fecha_inicio ?? "—"}
-                </div>
+    <div className="flex items-center gap-2 text-muted-foreground">
+      <CalendarDays className="h-4 w-4" />
+      Inicio: {formatFecha(cursoSeleccionado.fecha_inicio)} | 
+      Fin: {formatFecha(cursoSeleccionado.fecha_fin)}
+    </div>
 
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <DollarSign className="h-4 w-4" />
-                  Arancel base:{" "}
-                  {Number(cursoSeleccionado.arancel_base).toLocaleString(
-                    "es-AR",
-                    {
-                      style: "currency",
-                      currency: "ARS",
-                    }
-                  )}
-                </div>
-              </motion.div>
-            )}
+    <div className="flex items-center gap-2 text-muted-foreground">
+      <DollarSign className="h-4 w-4" />
+      Arancel base:{" "}
+      {Number(cursoSeleccionado.arancel_base).toLocaleString("es-AR", {
+        style: "currency",
+        currency: "ARS",
+      })}
+    </div>
+  </motion.div>
+)}
 
-            {/* BLOQUE 2 — MONTO + MÉTODO */}
+
+            {/* MONTO + MÉTODO */}
             <div className="grid md:grid-cols-2 gap-6">
+
               {/* MONTO */}
               <div className="grid gap-2">
                 <Label className="font-medium">Monto</Label>
                 <Input
-                  type="number"
-                  min="0"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={monto}
-                  onChange={(e) => setMonto(e.target.value)}
-                  placeholder="Ej: 12000"
+                  onChange={(e) => setMonto(e.target.value.replace(/\D/g, ""))}
+                  placeholder="Ej: 35000"
                 />
               </div>
 
-              {/* MÉTODO */}
+              {/* METODO */}
               <div className="grid gap-2">
                 <Label className="font-medium">Método de pago</Label>
                 <Select value={metodo} onValueChange={setMetodo}>
@@ -210,7 +240,6 @@ export default function Create() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Efectivo">Efectivo</SelectItem>
-                    <SelectItem value="Transferencia">Transferencia</SelectItem>
                     <SelectItem value="Tarjeta">Tarjeta</SelectItem>
                   </SelectContent>
                 </Select>
@@ -229,7 +258,7 @@ export default function Create() {
               />
             </div>
 
-            {/* BOTÓN FINAL */}
+            {/* BOTÓN */}
             <Button
               onClick={handleSubmit}
               className="w-full py-3 text-lg shadow-md"

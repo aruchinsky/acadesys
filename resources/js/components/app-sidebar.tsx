@@ -58,6 +58,7 @@ export function AppSidebar() {
   // 🔹 Administrativo
   if (rol === "administrativo") {
     mainNavItems.push(
+      { title: "Generar Pago", href: route("administrativo.pagos.create"), icon: Wallet },
       { title: "Cursos", href: route("cursos.index"), icon: BookOpen },
       { title: "Inscripciones", href: route("inscripciones.index"), icon: ClipboardList },
       { title: "Pagos", href: route("administrativo.pagos.index"), icon: Wallet },

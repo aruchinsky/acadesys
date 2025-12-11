@@ -3,7 +3,14 @@ import AppLayout from "@/layouts/app-layout"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Wallet, ClipboardList, Users, BookOpen, Sparkles } from "lucide-react"
+import {
+  Wallet,
+  ClipboardList,
+  Users,
+  BookOpen,
+  Sparkles,
+  PlusCircle,
+} from "lucide-react"
 
 export default function Administrativo() {
   const fade = {
@@ -25,6 +32,8 @@ export default function Administrativo() {
   return (
     <AppLayout>
       <Head title="Dashboard Administrativo" />
+
+      {/* HEADER PRINCIPAL */}
       <motion.div
         initial={{ opacity: 0, y: -15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -39,9 +48,46 @@ export default function Administrativo() {
         </p>
       </motion.div>
 
+      {/* 🚀 ACCIONES RÁPIDAS */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.4 }}
+        className="mx-2 sm:mx-4 md:mx-8 mt-6"
+      >
+        <Card className="border border-primary/40 shadow-md bg-primary/5 hover:bg-primary/10 transition-all">
+          <CardContent className="py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-base font-semibold text-primary flex items-center gap-2">
+                <PlusCircle className="h-5 w-5 text-primary" />
+                Acción rápida
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Generar un nuevo pago presencial para un alumno.
+              </p>
+            </div>
+
+            <Button
+              onClick={() => router.visit(route("administrativo.pagos.create"))}
+              className="bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 flex items-center gap-2 px-6 py-2 text-sm font-medium rounded-full"
+            >
+              <PlusCircle className="h-4 w-4" />
+              Generar Pago
+            </Button>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* GRID DE OPCIONES */}
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 px-2 sm:px-4 md:px-8">
         {opciones.map((op, i) => (
-          <motion.div key={op.titulo} variants={fade} initial="hidden" animate="visible" custom={i}>
+          <motion.div
+            key={op.titulo}
+            variants={fade}
+            initial="hidden"
+            animate="visible"
+            custom={i}
+          >
             <Card className="hover:shadow-md transition-all border-border">
               <CardHeader>
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -52,17 +98,6 @@ export default function Administrativo() {
                 <Button asChild size="sm" className="w-full mt-1">
                   <Link href={op.href}>Ingresar</Link>
                 </Button>
-                  {/* SOLO PARA GESTIÓN DE PAGOS */}
-                {op.titulo === "Gestión de Pagos" && (
-                  <Button
-                    size="sm"
-                    variant={"secondary"}
-                    className="w-full"
-                    onClick={() => router.visit(route("administrativo.pagos.create"))}
-                  >
-                    + Generar Pago
-                  </Button>
-                )}
               </CardContent>
             </Card>
           </motion.div>

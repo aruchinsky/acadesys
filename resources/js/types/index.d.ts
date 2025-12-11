@@ -58,7 +58,7 @@ export interface FlashMessages {
 // ============================================================
 
 export type EstadoInscripcion = "pendiente" | "confirmada" | "rechazada"
-export type MetodoPago = "Efectivo" | "Transferencia" | "Tarjeta"
+export type MetodoPago = "Efectivo" | "Transferencia" | "Tarjeta" | "MercadoPago";
 
 // --------------------- USUARIO ---------------------
 export interface User {
@@ -89,8 +89,8 @@ export interface Curso {
   id: number
   nombre: string
   descripcion: string | null
-  fecha_inicio: string | null
-  fecha_fin: string | null
+  fecha_inicio: string 
+  fecha_fin: string 
   arancel_base: number
   modalidad: "Presencial" | "Virtual"
   activo: boolean
@@ -132,6 +132,10 @@ export interface Pago {
   monto: number
   pagado_at: string
   metodo_pago: MetodoPago
+
+  comprobante?: string | null         // 📌 archivo subido
+  numero_operacion?: string | null    // 📌 operación MP o manual
+
   anulado: boolean
   motivo_anulacion?: string | null
   administrativo_id: number | null
@@ -143,6 +147,7 @@ export interface Pago {
   administrativo?: User
   inscripcion?: Inscripcion
 }
+
 
 // --------------------- ASISTENCIAS ---------------------
 export interface Asistencia {

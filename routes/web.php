@@ -21,13 +21,32 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
+
+// ============================================================
+// 🌐 CALLBACK DE MERCADOPAGO (PÚBLICO - SIN AUTH)
+// ============================================================
+//
+// IMPORTANTE:
+// MercadoPago NO puede acceder a rutas protegidas por auth.
+// Por eso el callback DEBE estar FUERA del middleware.
+//
+Route::get('/alumno/pagos/mercadopago/callback', [PagoController::class, 'mercadoPagoCallback'])
+    ->name('alumno.pagos.mercadopago.callback');
+
+
 // ============================================================
 // 🔐 ÁREA AUTENTICADA
 // ============================================================
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    // --- Dashboard dinámico según rol ---
+    // ============================================================
+    // 📄 COMPROBANTE PDF
+    // ============================================================
+    Route::get('/pagos/{pago}/comprobante', [PagoController::class, 'comprobante'])
+        ->name('pagos.comprobante');
+
+    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
@@ -35,48 +54,48 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // 📚 MÓDULOS ACADÉMICOS (SUPERUSUARIO / ADMINISTRATIVO)
     // ============================================================
 
-    // --- Cursos ---
     Route::resource('cursos', CursoController::class)
         ->parameters(['cursos' => 'curso'])
         ->middleware('role:superusuario|administrativo');
 
-    // --- Inscripciones ---
     Route::resource('inscripciones', InscripcionController::class)
         ->parameters(['inscripciones' => 'inscripcion'])
         ->middleware('role:superusuario|administrativo|profesor|alumno');
 
-    // --- Asistencias ---
     Route::resource('asistencias', AsistenciaController::class)
         ->parameters(['asistencias' => 'asistencia'])
         ->middleware('role:superusuario|administrativo|profesor|alumno');
+
 
     // ============================================================
     // 👨‍🏫 ÁREA PROFESOR
     // ============================================================
     Route::middleware('role:superusuario|profesor')->group(function () {
 
-        // Cursos asignados
         Route::get('/profesor/cursos', [CursoController::class, 'indexProfesor'])
             ->name('profesor.cursos.index');
 
         Route::get('/profesor/cursos/{curso}', [CursoController::class, 'showProfesor'])
             ->name('profesor.cursos.show');
 
-        // Registrar asistencias
         Route::get('/profesor/asistencias', [AsistenciaController::class, 'index'])
             ->name('profesor.asistencias.index');
 
-        // Historial
         Route::get('/profesor/cursos/{curso}/asistencias', [AsistenciaController::class, 'historial'])
             ->name('profesor.asistencias.historial');
     });
 
+
     // ============================================================
     // 🎓 ÁREA ALUMNO
     // ============================================================
-    Route::middleware('role:superusuario|alumno')->group(function () {
+    Route::middleware(['role:superusuario|alumno'])->group(function () {
 
-        // Cursos disponibles y mis cursos
+        // Crear preferencia MP (requiere autenticación)
+        Route::post('/alumno/pagos/mercadopago/preference', [PagoController::class, 'crearPreferencia'])
+            ->name('alumno.pagos.mercadopago.preference');
+
+        // Cursos disponibles
         Route::get('/alumno/cursos', [CursoController::class, 'alumnoIndex'])
             ->name('alumno.cursos.index');
 
@@ -87,30 +106,34 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('alumno.cursos.show');
 
         // Asistencias del alumno
-        Route::get('/alumno/asistencias', [AsistenciaController::class, 'index'])
+        Route::get('/alumno/asistencias', [AsistenciaController::class, 'alumnoIndex'])
             ->name('alumno.asistencias.index');
 
-        // Preinscripción a cursos
+        // Preinscripción
         Route::post('/cursos/{id}/preinscribir', [InscripcionController::class, 'preinscribir'])
             ->name('cursos.preinscribir');
 
-        // Pagos → Solo listado del alumno
+        // Pagos
         Route::get('/alumno/pagos', [PagoController::class, 'index'])
             ->name('alumno.pagos.index');
 
-        Route::get('/alumno/asistencias', [AsistenciaController::class, 'alumnoIndex'])
-            ->name('alumno.asistencias.index');
+        // Registrar pago manual
+        Route::get('/alumno/pagos/create', [PagoController::class, 'createAlumno'])
+            ->name('alumno.pagos.create');
+
+        Route::post('/alumno/pagos', [PagoController::class, 'storeAlumno'])
+            ->name('alumno.pagos.store');
     });
 
+
     // ============================================================
-    // 🗂️ ÁREA ADMINISTRATIVO (ADMINISTRACIÓN ACADÉMICA)
+    // 🗂️ ÁREA ADMINISTRATIVO
     // ============================================================
     Route::middleware('role:superusuario|administrativo')->group(function () {
-        // Pagos anulación
+
         Route::post('/administrativo/pagos/{pago}/anular', [PagoController::class, 'anular'])
             ->name('administrativo.pagos.anular');
 
-        // Inscripciones
         Route::get('/administrativo/inscripciones', [InscripcionController::class, 'index'])
             ->name('administrativo.inscripciones.index');
 
@@ -120,7 +143,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/admin/inscripciones/{id}/rechazar', [InscripcionController::class, 'rechazar'])
             ->name('admin.inscripciones.rechazar');
 
-        // Pagos (CRUD parcial)
+        // Pagos admin
         Route::get('/administrativo/pagos', [PagoController::class, 'index'])
             ->name('administrativo.pagos.index');
 
@@ -135,31 +158,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
-// ============================================================
-// 🛠️ ÁREA DE ADMINISTRACIÓN AVANZADA (SOLO SUPERUSUARIO)
-// ============================================================
 
+// ============================================================
+// ⚙️ ÁREA SUPERUSUARIO
+// ============================================================
 Route::middleware(['auth', 'verified', 'role:superusuario'])->group(function () {
 
-    // Roles
+    Route::resource('usuarios', UserController::class)
+        ->parameters(['usuarios' => 'usuario']);
+
     Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
     Route::get('/roles/create', [RoleController::class, 'create'])->name('roles.create');
     Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
     Route::get('/roles/{role}/edit', [RoleController::class, 'edit'])->name('roles.edit');
     Route::put('/roles/{role}', [RoleController::class, 'update'])->name('roles.update');
 
-    // Asignación de roles a usuarios
     Route::get('/usuarios/roles', [UserRoleController::class, 'index'])->name('usuarios.roles.index');
     Route::put('/usuarios/roles', [UserRoleController::class, 'update'])->name('usuarios.roles.update');
-
-    // Gestión de usuarios
-    Route::resource('usuarios', UserController::class)
-        ->parameters(['usuarios' => 'usuario']);
 });
 
-// ============================================================
-// ⚙️ CONFIGURACIONES Y AUTENTICACIÓN
-// ============================================================
 
+// ============================================================
+// 🔧 CONFIGURACIONES Y AUTENTICACIÓN
+// ============================================================
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

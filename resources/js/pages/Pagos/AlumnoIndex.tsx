@@ -12,33 +12,41 @@ import {
   CalendarDays,
   DollarSign,
   ShieldCheck,
+  PlusCircle,
+  FileText,
 } from "lucide-react"
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog"
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
+
 import { useMemo, useState } from "react"
+import { Toast } from "@/components/toast-provider"
 
 function formatFechaLocal(fechaString: string) {
   if (!fechaString) return "—"
 
-  // 1) Intento directo estándar (compatible con la mayoría de navegadores)
   let fecha = new Date(fechaString)
 
-  // 2) Si falla → crearla manualmente
   if (isNaN(fecha.getTime())) {
     const [fechaPart] = fechaString.split(" ")
     const [y, m, d] = fechaPart.split("-")
-
     fecha = new Date(Number(y), Number(m) - 1, Number(d))
   }
 
-  // 3) Si sigue fallando → fallback de emergencia
-  if (isNaN(fecha.getTime())) {
-    return "Fecha inválida"
-  }
+  if (isNaN(fecha.getTime())) return "Fecha inválida"
 
   return fecha.toLocaleDateString("es-AR", {
     day: "2-digit",
@@ -47,17 +55,28 @@ function formatFechaLocal(fechaString: string) {
   })
 }
 
-
 export default function AlumnoIndex() {
   const { pagos = [], auth } = usePage<pageProps>().props as pageProps & {
     pagos: Pago[]
   }
 
   const roles = auth?.roles ?? []
-  const isAdminLike = roles.includes("administrativo") || roles.includes("superusuario")
+  const isAdminLike =
+    roles.includes("administrativo") || roles.includes("superusuario")
   const isAlumno = roles.includes("alumno") && !isAdminLike
 
   const [search, setSearch] = useState("")
+  const [openModal, setOpenModal] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  const abrirComprobante = (ruta?: string | null) => {
+    if (!ruta) {
+      return Toast.error("No hay comprobante disponible.")
+    }
+
+    setPreviewUrl(`/storage/${ruta}`)
+    setOpenModal(true)
+  }
 
   const fade = {
     hidden: { opacity: 0, y: 12 },
@@ -68,7 +87,6 @@ export default function AlumnoIndex() {
     }),
   }
 
-  // FILTRADO
   const filteredPagos = useMemo(() => {
     if (!search.trim()) return pagos
 
@@ -83,27 +101,28 @@ export default function AlumnoIndex() {
     })
   }, [pagos, search])
 
-  // TOTAL — solo pagos NO anulados
   const totalMonto = useMemo(() => {
     return filteredPagos
       .filter((p) => !p.anulado)
       .reduce((acc, p) => acc + Number(p.monto ?? 0), 0)
   }, [filteredPagos])
 
-  const handleDelete = (id: number) => {
-    router.delete(route("administrativo.pagos.destroy", id))
-  }
-
   const methodBadge = (metodo: string) => {
     let classes =
       "bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200"
 
     if (metodo === "Efectivo")
-      classes = "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+      classes =
+        "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
     if (metodo === "Transferencia")
-      classes = "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+      classes =
+        "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
     if (metodo === "Tarjeta")
-      classes = "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
+      classes =
+        "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
+    if (metodo === "MercadoPago")
+      classes =
+        "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300"
 
     return <Badge className={`text-xs ${classes}`}>{metodo}</Badge>
   }
@@ -111,7 +130,9 @@ export default function AlumnoIndex() {
   const breadcrumbs = [
     {
       title: isAlumno ? "Mis pagos" : "Pagos",
-      href: isAlumno ? route("alumno.pagos.index") : route("administrativo.pagos.index"),
+      href: isAlumno
+        ? route("alumno.pagos.index")
+        : route("administrativo.pagos.index"),
     },
   ]
 
@@ -119,8 +140,11 @@ export default function AlumnoIndex() {
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title={isAlumno ? "Mis pagos" : "Gestión de pagos"} />
 
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-4 flex flex-col gap-6">
-
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="p-4 flex flex-col gap-6"
+      >
         {/* HEADER */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
@@ -131,21 +155,36 @@ export default function AlumnoIndex() {
             <p className="text-sm text-muted-foreground">
               {isAlumno
                 ? "Aquí podés consultar los pagos registrados de tus cursos."
-                : "Listado general filtrable."}
+                : "Listado general filtrable de pagos registrados."}
             </p>
           </div>
 
-          <Card className="sm:w-64 border border-border/60 shadow-sm">
-            <CardContent className="py-3 px-4 flex flex-col gap-1">
-              <span className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-1">
-                <DollarSign className="h-3 w-3" />
-                {isAlumno ? "Total abonado" : "Total cobrado"}
-              </span>
-              <span className="text-lg font-semibold">
-                {totalMonto.toLocaleString("es-AR", { style: "currency", currency: "ARS" })}
-              </span>
-            </CardContent>
-          </Card>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <Card className="sm:w-64 border border-border/60 shadow-sm">
+              <CardContent className="py-3 px-4 flex flex-col gap-1">
+                <span className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-1">
+                  <DollarSign className="h-3 w-3" />
+                  {isAlumno ? "Total abonado" : "Total cobrado"}
+                </span>
+                <span className="text-lg font-semibold">
+                  {totalMonto.toLocaleString("es-AR", {
+                    style: "currency",
+                    currency: "ARS",
+                  })}
+                </span>
+              </CardContent>
+            </Card>
+
+            {isAlumno && (
+              <Button
+                onClick={() => router.visit(route("alumno.pagos.create"))}
+                className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md flex items-center gap-2"
+              >
+                <PlusCircle className="h-4 w-4" />
+                Realizar pago
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* FILTROS */}
@@ -195,13 +234,24 @@ export default function AlumnoIndex() {
                 <thead className="bg-muted text-muted-foreground">
                   <tr>
                     <th className="px-4 py-2 text-left">ID</th>
-                    {!isAlumno && <th className="px-4 py-2 text-left">Alumno</th>}
+                    {!isAlumno && (
+                      <th className="px-4 py-2 text-left">Alumno</th>
+                    )}
                     <th className="px-4 py-2 text-left">Curso</th>
                     <th className="px-4 py-2 text-left">Monto</th>
                     <th className="px-4 py-2 text-left">Fecha</th>
-                    <th className="px-4 py-2 text-left">Método / Estado</th>
-                    {!isAlumno && <th className="px-4 py-2 text-left">Registrado por</th>}
-                    {isAdminLike && <th className="px-4 py-2 text-left">Acciones</th>}
+                    <th className="px-4 py-2 text-left">Método</th>
+
+                    {/* ✔️ NUEVO: comprobante del alumno */}
+                    {isAlumno && (
+                      <th className="px-4 py-2 text-left">Comprobante subido</th>
+                    )}
+
+                    {/* ✔️ NUEVO: comprobante del sistema */}
+                    {isAlumno && (
+                      <th className="px-4 py-2 text-left">Comprobante PDF</th>
+                    )}
+
                   </tr>
                 </thead>
 
@@ -236,11 +286,17 @@ export default function AlumnoIndex() {
                       <td className="px-4 py-2">
                         {pago.anulado ? (
                           <span className="line-through text-red-500/70">
-                            {pago.monto.toLocaleString("es-AR", { style: "currency", currency: "ARS" })}
+                            {pago.monto.toLocaleString("es-AR", {
+                              style: "currency",
+                              currency: "ARS",
+                            })}
                           </span>
                         ) : (
                           <span className="font-medium">
-                            {pago.monto.toLocaleString("es-AR", { style: "currency", currency: "ARS" })}
+                            {pago.monto.toLocaleString("es-AR", {
+                              style: "currency",
+                              currency: "ARS",
+                            })}
                           </span>
                         )}
                       </td>
@@ -262,46 +318,52 @@ export default function AlumnoIndex() {
                         )}
                       </td>
 
-                      {!isAlumno && (
+                      {/* ✔️ comprobante subido por alumno */}
+                      {isAlumno && (
                         <td className="px-4 py-2">
-                          {pago.administrativo?.nombre_completo ?? "—"}
+                          {!pago.anulado && pago.comprobante ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => abrirComprobante(pago.comprobante)}
+                              className="flex items-center gap-2"
+                            >
+                              Ver comprobante
+                            </Button>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">
+                              —
+                            </span>
+                          )}
                         </td>
                       )}
 
-                      {isAdminLike && (
+                      {/* ✔️ PDF generado por el sistema */}
+                      {isAlumno && (
                         <td className="px-4 py-2">
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button size="sm" variant="destructive">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle className="flex items-center gap-2">
-                                  <AlertTriangle className="h-5 w-5 text-red-500" />
-                                  Eliminar pago
-                                </AlertDialogTitle>
-
-                                <AlertDialogDescription>
-                                  ¿Seguro que deseas eliminar este pago?
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDelete(pago.id)}
-                                  className="bg-destructive"
-                                >
-                                  Eliminar
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                          {!pago.anulado ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                window.open(
+                                  route("pagos.comprobante", pago.id),
+                                  "_blank"
+                                )
+                              }
+                              className="flex items-center gap-2"
+                            >
+                              <FileText className="h-4 w-4" />
+                              PDF
+                            </Button>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">
+                              —
+                            </span>
+                          )}
                         </td>
                       )}
+
                     </motion.tr>
                   ))}
                 </tbody>
@@ -310,6 +372,62 @@ export default function AlumnoIndex() {
           </CardContent>
         </Card>
       </motion.div>
+
+{/* MODAL COMPROBANTE — ALUMNO */}
+<AlertDialog open={openModal} onOpenChange={setOpenModal}>
+  <AlertDialogContent
+    className="
+      w-[70vw]          /* ancho centrado */
+      max-w-4xl         /* límite elegante */
+      h-[90vh]          /* alto grande */
+      max-h-none
+      flex 
+      flex-col 
+      p-4
+    "
+  >
+    <AlertDialogHeader>
+      <AlertDialogTitle>Comprobante del pago</AlertDialogTitle>
+      <AlertDialogDescription>
+        Vista previa del comprobante cargado.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+
+    {/* CONTENEDOR DEL COMPROBANTE */}
+    <div className="
+      flex-1
+      flex
+      items-center
+      justify-center
+      bg-background 
+      rounded-lg 
+      overflow-hidden
+    ">
+      {previewUrl && previewUrl.endsWith(".pdf") ? (
+        <iframe
+          src={previewUrl ?? ""}
+          className="w-full h-full object-contain"
+          style={{ border: "none" }}
+        />
+      ) : (
+        <img
+          src={previewUrl ?? ""}
+          className="max-h-full max-w-full object-contain rounded-md"
+        />
+      )}
+    </div>
+
+    <AlertDialogFooter className="mt-4">
+      <AlertDialogCancel
+        onClick={() => setOpenModal(false)}
+        className="w-full sm:w-auto"
+      >
+        Cerrar
+      </AlertDialogCancel>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+
     </AppLayout>
   )
 }

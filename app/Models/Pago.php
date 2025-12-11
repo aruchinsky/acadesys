@@ -15,38 +15,41 @@ class Pago extends Model
         'monto',
         'pagado_at',
         'metodo_pago',
+        'comprobante',          // 📌 NUEVO: archivo subido
+        'numero_operacion',     // 📌 NUEVO: ID de MP u operación
         'anulado',
         'motivo_anulacion',
-        'administrativo_id'
+        'administrativo_id',
+        'comprobante',
     ];
 
     protected $casts = [
         'monto' => 'decimal:2',
-        'pagado_at' => 'datetime'
+        'pagado_at' => 'datetime',
+        'anulado' => 'boolean',
     ];
 
-    /**
-     * Obtiene el usuario que realizó el pago
-     */
+    /** Usuario que realizó el pago */
     public function usuario()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /** Administrativo que registró el pago */
     public function administrativo()
     {
         return $this->belongsTo(User::class, 'administrativo_id');
     }
 
+    /** Inscripción relacionada */
     public function inscripcion()
     {
         return $this->belongsTo(Inscripcion::class, 'inscripcion_id');
     }
 
+    /** Texto útil para selects */
     public function getDetallePagoAttribute()
     {
         return "{$this->usuario?->nombre_completo} - $ {$this->monto}";
     }
-
-
 }

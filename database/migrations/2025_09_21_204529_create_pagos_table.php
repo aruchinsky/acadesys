@@ -17,11 +17,13 @@ return new class extends Migration
             $table->foreignId('inscripcion_id')->constrained('inscripciones')->cascadeOnDelete();
             $table->decimal('monto', 10, 2);
             $table->dateTime('pagado_at')->useCurrent();
-            $table->enum('metodo_pago', ['Efectivo','Transferencia','Tarjeta'])->default('Efectivo');
+            $table->enum('metodo_pago', ['Efectivo','Transferencia','Tarjeta','MercadoPago'])->default('Efectivo');
             $table->foreignId('administrativo_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete(); // si querés registrar quién pagó (no obligatorio)
             $table->boolean('anulado')->default(false);
             $table->string('motivo_anulacion')->nullable();
+            $table->string('comprobante')->nullable();
+            $table->string('numero_operacion')->nullable();
             $table->timestamps();
         });
     }

@@ -102,6 +102,12 @@ DB_PORT=3306
 DB_DATABASE=acadesys
 DB_USERNAME=root
 DB_PASSWORD=
+
+MP_ACCESS_TOKEN=XXXXXXX
+MP_PUBLIC_KEY=XXXXXXX
+
+VITE_APP_NAME="${APP_NAME}"
+VITE_MP_PUBLIC_KEY="${MP_PUBLIC_KEY}"
 ```
 
 ### 6️⃣ Generar clave de aplicación
@@ -114,6 +120,12 @@ php artisan key:generate
 php artisan migrate --seed
 ```
 > Esto creará las tablas y las cuentas de prueba listadas arriba.
+
+### Crear el enlace para carpeta de imagenes
+```bash
+php artisan storage:link
+```
+> Esto habilita ver comprobantes, imágenes, PDFs, etc.
 
 ---
 

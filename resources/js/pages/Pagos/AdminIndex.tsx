@@ -9,7 +9,10 @@ import {
   AlertTriangle,
   DollarSign,
   ShieldCheck,
+  FileText,
+  Image as ImageIcon,
 } from "lucide-react"
+
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -36,17 +39,14 @@ import { Toast } from "@/components/toast-provider"
 function formatFechaLocal(fechaString: string) {
   if (!fechaString) return "—"
 
-  // 1) intento normal
   let fecha = new Date(fechaString)
 
-  // 2) si falla, crearla manualmente
   if (isNaN(fecha.getTime())) {
     const [fechaPart] = fechaString.split(" ")
     const [y, m, d] = fechaPart.split("-")
     fecha = new Date(Number(y), Number(m) - 1, Number(d))
   }
 
-  // 3) fallback final
   if (isNaN(fecha.getTime())) return "Fecha inválida"
 
   return fecha.toLocaleDateString("es-AR", {
@@ -69,6 +69,16 @@ export default function AdminIndex() {
   const [search, setSearch] = useState("")
   const [mostrarAnulados, setMostrarAnulados] = useState(false)
   const [motivos, setMotivos] = useState<Record<number, string>>({})
+  const [openModal, setOpenModal] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  // Abrir comprobante del alumno
+  const abrirComprobante = (ruta?: string | null) => {
+    if (!ruta) return Toast.error("No hay comprobante disponible.")
+
+    setPreviewUrl(`/storage/${ruta}`)
+    setOpenModal(true)
+  }
 
   const fade = {
     hidden: { opacity: 0, y: 12 },
@@ -109,7 +119,9 @@ export default function AdminIndex() {
       Efectivo: "bg-emerald-100 text-emerald-700",
       Transferencia: "bg-blue-100 text-blue-700",
       Tarjeta: "bg-purple-100 text-purple-700",
+      MercadoPago: "bg-cyan-100 text-cyan-700",
     }
+
     return (
       <Badge
         className={`text-xs ${
@@ -139,12 +151,12 @@ export default function AdminIndex() {
               <CreditCard className="h-6 w-6 text-primary" /> Gestión de pagos
             </h1>
             <p className="text-sm text-muted-foreground">
-              Pagos registrados, filtrados y anulados.
+              Pagos registrados, comprobantes, anulados y filtros avanzados.
             </p>
           </div>
 
+          {/* TOTAL */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            {/* TOTAL */}
             <Card className="sm:w-64 border border-border/60 shadow-sm">
               <CardContent className="py-3 px-4">
                 <span className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-1">
@@ -160,7 +172,7 @@ export default function AdminIndex() {
               </CardContent>
             </Card>
 
-            {/* BOTÓN GENERAR PAGO */}
+            {/* BOTÓN CREAR PAGO */}
             {isAdminLike && (
               <Button
                 onClick={() =>
@@ -226,9 +238,11 @@ export default function AdminIndex() {
                     <th className="px-4 py-2 text-left">Alumno</th>
                     <th className="px-4 py-2 text-left">Curso</th>
                     <th className="px-4 py-2 text-left">Monto</th>
-                    <th className="px-4 py-2 text-left">Fecha</th>
+                    {/* <th className="px-4 py-2 text-left">Fecha</th> */}
                     <th className="px-4 py-2 text-left">Método</th>
-                    <th className="px-4 py-2 text-left">Registrado por</th>
+                    <th className="px-4 py-2 text-left">Comprobante Alumno</th>
+                    <th className="px-4 py-2 text-left">Recibo Pago</th>
+                    {/* <th className="px-4 py-2 text-left">Registrado por</th> */}
                     <th className="px-4 py-2 text-left">Acciones</th>
                   </tr>
                 </thead>
@@ -258,18 +272,20 @@ export default function AdminIndex() {
                         <td className="px-4 py-2 align-middle">
                           {pago.anulado ? (
                             <div className="flex flex-col">
+                              {/* MONTO TACHADO */}
                               <span className="line-through text-red-500/70 font-medium">
                                 {Number(pago.monto).toLocaleString("es-AR", {
                                   style: "currency",
                                   currency: "ARS",
                                 })}
                               </span>
-                              {mostrarAnulados &&
-                                pago.motivo_anulacion && (
-                                  <span className="text-xs text-red-400 mt-1 italic">
-                                    Motivo: {pago.motivo_anulacion}
-                                  </span>
-                                )}
+
+                              {/* MOTIVO (solo cuando se muestran pag. anulados) */}
+                              {mostrarAnulados && pago.motivo_anulacion && (
+                                <span className="text-xs text-red-400 mt-1 italic">
+                                  Motivo: {pago.motivo_anulacion}
+                                </span>
+                              )}
                             </div>
                           ) : (
                             <span className="font-medium">
@@ -281,26 +297,62 @@ export default function AdminIndex() {
                           )}
                         </td>
 
+                        {/* <td className="px-4 py-2">{formatFechaLocal(pago.pagado_at)}</td> */}
+
+                        <td className="px-4 py-2">{methodBadge(pago.metodo_pago)}</td>
+
+                        {/* ✔ COMPROBANTE SUBIDO */}
                         <td className="px-4 py-2">
-                          {formatFechaLocal(pago.pagado_at)}
+                          {!pago.anulado && pago.comprobante ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => abrirComprobante(pago.comprobante)}
+                              className="flex items-center gap-2"
+                            >
+                              <ImageIcon className="h-4 w-4" />
+                              Ver
+                            </Button>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
                         </td>
 
+                        {/* ✔ COMPROBANTE PDF SISTEMA */}
                         <td className="px-4 py-2">
-                          {methodBadge(pago.metodo_pago)}
+                          {!pago.anulado ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() =>
+                                window.open(
+                                  route("pagos.comprobante", pago.id),
+                                  "_blank"
+                                )
+                              }
+                              className="flex items-center gap-2"
+                            >
+                              <FileText className="h-4 w-4" />
+                              PDF
+                            </Button>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
                         </td>
 
-                        <td className="px-4 py-2">
+                        {/* <td className="px-4 py-2">
                           {pago.administrativo?.nombre_completo ?? "—"}
-                        </td>
+                        </td> */}
 
                         {/* ACCIONES */}
-                        {isAdminLike && (
-                          <td className="px-4 py-2 align-middle">
-                            {pago.anulado ? (
-                              <Badge className="bg-red-200 text-red-800 dark:bg-red-900/40 dark:text-red-300">
-                                ANULADO
-                              </Badge>
-                            ) : (
+                        <td className="px-4 py-2 align-middle">
+                          {pago.anulado ? (
+                            <Badge className="bg-red-200 text-red-800 dark:bg-red-900/40 dark:text-red-300">
+                              ANULADO
+                            </Badge>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              {/* 🗑️ Botón Anular */}
                               <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                   <Button
@@ -319,9 +371,7 @@ export default function AdminIndex() {
                                       Anular pago
                                     </AlertDialogTitle>
                                     <AlertDialogDescription>
-                                      Debes ingresar un{" "}
-                                      <strong>motivo</strong> para anular este
-                                      pago.
+                                      Debes ingresar un <strong>motivo</strong> para anular este pago.
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
 
@@ -340,28 +390,17 @@ export default function AdminIndex() {
                                   </div>
 
                                   <AlertDialogFooter>
-                                    <AlertDialogCancel>
-                                      Cancelar
-                                    </AlertDialogCancel>
-
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                     <AlertDialogAction
                                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                       onClick={() => {
                                         const motivo = motivos[pago.id]
-                                        if (
-                                          !motivo ||
-                                          motivo.trim().length < 5
-                                        ) {
-                                          return Toast.error(
-                                            "Debes ingresar un motivo más detallado."
-                                          )
+                                        if (!motivo || motivo.trim().length < 5) {
+                                          return Toast.error("Debes ingresar un motivo más detallado.")
                                         }
 
                                         router.post(
-                                          route(
-                                            "administrativo.pagos.anular",
-                                            pago.id
-                                          ),
+                                          route("administrativo.pagos.anular", pago.id),
                                           { motivo },
                                           { preserveScroll: true }
                                         )
@@ -372,9 +411,9 @@ export default function AdminIndex() {
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
                               </AlertDialog>
-                            )}
-                          </td>
-                        )}
+                            </div>
+                          )}
+                        </td>
                       </motion.tr>
                     ))}
                 </tbody>
@@ -383,6 +422,65 @@ export default function AdminIndex() {
           </CardContent>
         </Card>
       </motion.div>
+
+{/* MODAL COMPROBANTE — GRANDE, CENTRADO, SIN SCROLL */}
+<AlertDialog open={openModal} onOpenChange={setOpenModal}>
+  <AlertDialogContent
+    className="
+      w-[70vw]          /* ancho centrado */
+      max-w-4xl         /* límite elegante */
+      h-[90vh]          /* alto grande */
+      max-h-none
+      flex 
+      flex-col 
+      p-4
+    "
+  >
+    <AlertDialogHeader>
+      <AlertDialogTitle>Comprobante del pago</AlertDialogTitle>
+      <AlertDialogDescription>
+        Vista previa del comprobante cargado por el alumno.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+
+    {/* CONTENEDOR DEL COMPROBANTE */}
+    <div className="
+      flex-1 
+      flex 
+      items-center 
+      justify-center 
+      bg-background 
+      rounded-lg 
+      overflow-hidden
+    ">
+      {previewUrl && previewUrl.endsWith(".pdf") ? (
+        <iframe
+          src={previewUrl ?? ""}
+          className="w-full h-full object-contain"
+          style={{ border: "none" }}
+        />
+      ) : (
+        <img
+          src={previewUrl ?? ""}
+          className="max-h-full max-w-full object-contain rounded-md"
+        />
+      )}
+    </div>
+
+    <AlertDialogFooter className="mt-4">
+      <AlertDialogCancel
+        onClick={() => setOpenModal(false)}
+        className="w-full sm:w-auto"
+      >
+        Cerrar
+      </AlertDialogCancel>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+
+
+
+
     </AppLayout>
   )
 }
