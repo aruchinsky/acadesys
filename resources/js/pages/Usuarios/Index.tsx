@@ -1,44 +1,58 @@
 import { Head, Link, router, useForm, usePage } from "@inertiajs/react"
 import AppLayout from "@/layouts/app-layout"
-import { pageProps, Role, UserWithRoles, BreadcrumbItem } from "@/types"
+import { pageProps, Role, UserWithRoles } from "@/types"
 import { motion } from "framer-motion"
 import {
-  Pencil,
-  Trash2,
+  Users,
+  UserCog,
+  Search,
   ShieldCheck,
   Plus,
-  UserCog,
-  Users,
+  Pencil,
+  Trash2,
   AlertTriangle,
+  BadgeCheck,
 } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+
 import {
   Select,
-  SelectContent,
-  SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectContent,
+  SelectItem,
 } from "@/components/ui/select"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
   AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogAction,
 } from "@/components/ui/alert-dialog"
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: "Usuarios", href: route("usuarios.index") }]
+import { useState, useMemo } from "react"
 
-export default function Index() {
+export default function UsuariosIndex() {
   const { users, roles } = usePage<pageProps>().props
+
   const usersList: UserWithRoles[] = Array.isArray(users) ? users : []
   const roleItems: Role[] = roles as Role[]
 
+  const [search, setSearch] = useState("")
+  const [soloAdministrativos, setSoloAdministrativos] = useState(false)
+
+  // MAPEAR ROL ACTIVO DE CADA USUARIO
   const initialRoles: Record<number, string> = {}
   usersList.forEach((u) => (initialRoles[u.id] = u.roles?.[0]?.name || ""))
 
@@ -46,7 +60,7 @@ export default function Index() {
     roles: initialRoles,
   })
 
-  const handleChange = (userId: number, role: string) =>
+  const handleRoleChange = (userId: number, role: string) =>
     setData("roles", { ...data.roles, [userId]: role })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -55,7 +69,7 @@ export default function Index() {
   }
 
   const fade = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 12 },
     visible: (i: number) => ({
       opacity: 1,
       y: 0,
@@ -63,73 +77,158 @@ export default function Index() {
     }),
   }
 
-  const deleteUser = (id: number) => {
-    router.delete(route("usuarios.destroy", id))
+  const deleteUser = (id: number) => router.delete(route("usuarios.destroy", id))
+
+  const filteredUsers = useMemo(() => {
+    let data = usersList
+
+    if (soloAdministrativos) {
+      data = data.filter((u) =>
+        u.roles?.some((r) => ["administrativo", "superusuario"].includes(r.name))
+      )
+    }
+
+    if (search.trim()) {
+      const term = search.toLowerCase()
+
+      data = data.filter(
+        (u) =>
+          u.name.toLowerCase().includes(term) ||
+          u.email.toLowerCase().includes(term) ||
+          u.dni.toLowerCase().includes(term) ||
+          u.roles?.[0]?.name.toLowerCase().includes(term)
+      )
+    }
+
+    return data
+  }, [search, soloAdministrativos, usersList])
+
+  const roleBadge = (role?: string) => {
+    const colors: Record<string, string> = {
+      superusuario: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
+      administrativo: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+      profesor: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
+      alumno: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+    }
+
+    return (
+      <Badge className={`text-xs ${colors[role || "alumno"]}`}>
+        {role}
+      </Badge>
+    )
   }
 
   return (
-    <AppLayout breadcrumbs={breadcrumbs}>
+    <AppLayout breadcrumbs={[{ title: "Usuarios", href: route("usuarios.index") }]}>
       <Head title="Usuarios" />
 
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-6 p-4"
+        className="p-4 flex flex-col gap-6"
       >
-        {/* ENCABEZADO */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold flex items-center gap-2 text-foreground">
-            <Users className="h-6 w-6 text-primary" /> Gestión de Usuarios
+      {/* HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold flex items-center gap-2">
+            <Users className="h-6 w-6 text-primary" />
+            Gestión de Usuarios
           </h1>
-          <div className="flex gap-2">
-            <Button asChild variant="default">
-              <Link href={route("usuarios.create")}>
-                <Plus className="h-4 w-4 mr-1" /> Nuevo
-              </Link>
-            </Button>
+          <p className="text-sm text-muted-foreground">
+            Administración completa de cuentas, roles y accesos.
+          </p>
+        </div>
+
+        {/* BOTONES */}
+        <div className="flex items-center gap-2">
+          <Button asChild variant="default">
+            <Link href={route("usuarios.create")}>
+              <Plus className="h-4 w-4 mr-1" /> Nuevo usuario
+            </Link>
+          </Button>
+
+          {/* 🔥 Botón dentro del FORM */}
+          <form onSubmit={handleSubmit}>
             <Button
+              type="submit"
               variant="secondary"
-              onClick={handleSubmit}
               disabled={processing}
             >
               <ShieldCheck className="h-4 w-4 mr-1" /> Guardar roles
             </Button>
-          </div>
+          </form>
         </div>
+      </div>
 
-        {/* TABLA */}
+        {/* FILTROS */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-medium flex items-center gap-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Search className="h-4 w-4 text-primary" /> Buscar usuarios
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent>
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Ej: Juan Pérez, profesor, administrativo…"
+            />
+
+            <div className="flex items-center gap-3 mt-4">
+              <Switch
+                checked={soloAdministrativos}
+                onCheckedChange={setSoloAdministrativos}
+                id="solo-admin"
+              />
+              <Label htmlFor="solo-admin" className="cursor-pointer">
+                Mostrar solo administrativos / superusuarios
+              </Label>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* TABLA */}
+        <Card className="overflow-x-auto border border-border/40 shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
               <UserCog className="h-5 w-5 text-primary" /> Lista de usuarios
             </CardTitle>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
+
+          <CardContent>
             <form onSubmit={handleSubmit}>
-              <table className="min-w-full table-auto text-sm">
-                <thead className="bg-muted text-muted-foreground">
-                  <tr>
-                    <th className="px-4 py-2 text-left">ID</th>
-                    <th className="px-4 py-2 text-left">Nombre</th>
-                    <th className="px-4 py-2 text-left">Email</th>
-                    <th className="px-4 py-2 text-left">DNI</th>
-                    <th className="px-4 py-2 text-left">Rol</th>
-                    <th className="px-4 py-2 text-left">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {usersList.length > 0 ? (
-                    usersList.map((user, i) => (
+              {filteredUsers.length === 0 ? (
+                <p className="py-4 text-center text-sm text-muted-foreground">
+                  No hay usuarios que coincidan con la búsqueda.
+                </p>
+              ) : (
+                <table className="min-w-full table-auto text-sm">
+                  <thead className="bg-muted text-muted-foreground">
+                    <tr>
+                      <th className="px-4 py-2 text-left">ID</th>
+                      <th className="px-4 py-2 text-left">Nombre</th>
+                      <th className="px-4 py-2 text-left">Email</th>
+                      <th className="px-4 py-2 text-left">DNI</th>
+                      <th className="px-4 py-2 text-left">Rol actual</th>
+                      <th className="px-4 py-2 text-left">Asignar rol</th>
+                      <th className="px-4 py-2 text-left">Acciones</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {filteredUsers.map((user, i) => (
                       <motion.tr
                         key={user.id}
                         variants={fade}
                         initial="hidden"
                         animate="visible"
                         custom={i}
-                        className="border-b hover:bg-accent/10"
+                        className="border-b hover:bg-accent/10 transition-colors"
                       >
                         <td className="px-4 py-2">{user.id}</td>
-                        <td className="px-4 py-2">
+
+                        <td className="px-4 py-2 font-medium">
                           <Link
                             href={route("usuarios.show", user.id)}
                             className="text-primary hover:underline"
@@ -137,44 +236,49 @@ export default function Index() {
                             {user.name}
                           </Link>
                         </td>
+
                         <td className="px-4 py-2">{user.email}</td>
                         <td className="px-4 py-2">{user.dni}</td>
+
+                        <td className="px-4 py-2">
+                          {roleBadge(user.roles?.[0]?.name)}
+                        </td>
+
+                        {/* SELECT DE ROLES */}
                         <td className="px-4 py-2">
                           <Select
                             value={data.roles[user.id]}
-                            onValueChange={(v) => handleChange(user.id, v)}
+                            onValueChange={(v) => handleRoleChange(user.id, v)}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Seleccionar" />
+                              <SelectValue placeholder="Seleccionar rol" />
                             </SelectTrigger>
                             <SelectContent>
                               {roleItems.map((r) => (
-                                <SelectItem key={r.name} value={r.name}>
+                                <SelectItem key={r.id} value={r.name}>
                                   {r.name}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         </td>
+
                         <td className="px-4 py-2">
                           <div className="flex gap-2">
-                            <Button
-                              asChild
-                              size="sm"
-                              variant="outline"
-                            >
+
+                            <Button asChild size="sm" variant="outline">
                               <Link href={route("usuarios.edit", user.id)}>
                                 <Pencil className="h-4 w-4" />
                               </Link>
                             </Button>
 
-                            {/* 🧩 ALERT DIALOG para eliminación moderna */}
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button size="sm" variant="destructive">
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </AlertDialogTrigger>
+
                               <AlertDialogContent>
                                 <AlertDialogHeader>
                                   <AlertDialogTitle className="flex items-center gap-2">
@@ -183,9 +287,11 @@ export default function Index() {
                                   </AlertDialogTitle>
                                   <AlertDialogDescription>
                                     ¿Seguro que deseas eliminar al usuario{" "}
-                                    <strong>{user.name}</strong>? Esta acción no se puede deshacer.
+                                    <strong>{user.name}</strong>?  
+                                    Esta acción no se puede deshacer.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
+
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                   <AlertDialogAction
@@ -200,19 +306,10 @@ export default function Index() {
                           </div>
                         </td>
                       </motion.tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={6}
-                        className="py-6 text-center text-muted-foreground"
-                      >
-                        No hay usuarios registrados.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </form>
           </CardContent>
         </Card>

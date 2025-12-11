@@ -201,7 +201,9 @@ Route::middleware(['auth', 'verified', 'role:superusuario'])->group(function () 
     Route::put('/roles/{role}', [RoleController::class, 'update'])->name('roles.update');
 
     Route::get('/usuarios/roles', [UserRoleController::class, 'index'])->name('usuarios.roles.index');
-    Route::put('/usuarios/roles', [UserRoleController::class, 'update'])->name('usuarios.roles.update');
+    Route::put('/super/usuarios/roles', [UserRoleController::class, 'update'])
+        ->name('usuarios.roles.update');
+
 });
 
 

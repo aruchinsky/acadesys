@@ -1,40 +1,50 @@
 import { Head, Link, router, usePage } from "@inertiajs/react"
 import AppLayout from "@/layouts/app-layout"
-import { Curso, pageProps, BreadcrumbItem } from "@/types"
+import { Curso, pageProps } from "@/types"
 import { motion } from "framer-motion"
 import {
-  Plus,
+  Search,
   BookOpen,
-  DollarSign,
-  Pencil,
+  Layers,
+  Users2,
   Trash2,
   AlertTriangle,
-  Users2,
+  Pencil,
+  Plus,
 } from "lucide-react"
+
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
   AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogAction,
 } from "@/components/ui/alert-dialog"
-import { Badge } from "@/components/ui/badge"
+
+import { useMemo, useState } from "react"
 import { formatFechaLocal } from "@/lib/utils"
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: "Cursos", href: route("cursos.index") }]
+export default function AdminCursosIndex() {
+  const { cursos = [] } = usePage<pageProps>().props as pageProps & {
+    cursos: Curso[]
+  }
 
-export default function Index() {
-  const { cursos } = usePage<pageProps>().props
-  const cursosList: Curso[] = Array.isArray(cursos) ? cursos : []
+  const [search, setSearch] = useState("")
+  const [soloActivos, setSoloActivos] = useState(false)
 
   const fade = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 12 },
     visible: (i: number) => ({
       opacity: 1,
       y: 0,
@@ -42,73 +52,147 @@ export default function Index() {
     }),
   }
 
-  const deleteCurso = (id: number) => {
-    router.delete(route("cursos.destroy", id))
-  }
-
-  const getEstadoBadge = (activo: boolean) => (
-    <Badge variant={activo ? "default" : "secondary"} className="text-xs">
-      {activo ? "Activo" : "Inactivo"}
-    </Badge>
-  )
-
-  const getModalidadBadge = (modalidad?: string) => {
+  // BADGES
+  const modalidadBadge = (modalidad?: string) => {
     const colors: Record<string, string> = {
       Presencial: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-      Virtual: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
+      Virtual:
+        "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
     }
     return (
-      <Badge className={`text-xs ${colors[modalidad || "Presencial"] || ""}`}>
+      <Badge className={`text-xs ${colors[modalidad ?? "Presencial"]}`}>
         {modalidad}
       </Badge>
     )
   }
 
+  const estadoBadge = (activo: boolean) => (
+    <Badge
+      className={`text-xs ${
+        activo
+          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+          : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
+      }`}
+    >
+      {activo ? "Activo" : "Inactivo"}
+    </Badge>
+  )
+
+  // FILTROS
+  const filteredCursos = useMemo(() => {
+    let data = cursos
+
+    if (soloActivos) {
+      data = data.filter((c) => c.activo)
+    }
+
+    if (search.trim().length > 0) {
+      const term = search.toLowerCase()
+
+      data = data.filter(
+        (c) =>
+          c.nombre.toLowerCase().includes(term) ||
+          c.modalidad.toLowerCase().includes(term) ||
+          String(c.arancel_base).includes(term)
+      )
+    }
+
+    return data
+  }, [search, soloActivos, cursos])
+
+  const deleteCurso = (id: number) => {
+    router.delete(route("cursos.destroy", id))
+  }
+
   return (
-    <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title="Cursos" />
+    <AppLayout breadcrumbs={[{ title: "Cursos", href: route("cursos.index") }]}>
+      <Head title="Gestión de Cursos" />
 
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-6 p-4"
+        className="p-4 flex flex-col gap-6"
       >
-        {/* ENCABEZADO */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold flex items-center gap-2 text-foreground">
-            <BookOpen className="h-6 w-6 text-primary" /> Gestión de Cursos
-          </h1>
-          <Button asChild variant="default">
+        {/* HEADER */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold flex items-center gap-2 text-foreground">
+              <BookOpen className="h-6 w-6 text-primary" /> Gestión de Cursos
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Administración completa de los cursos activos e inactivos.
+            </p>
+          </div>
+
+          <Button
+            asChild
+            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow"
+          >
             <Link href={route("cursos.create")}>
-              <Plus className="h-4 w-4 mr-1" /> Nuevo
+              <Plus className="h-4 w-4 mr-1" /> Nuevo curso
             </Link>
           </Button>
         </div>
 
-        {/* TABLA DE CURSOS */}
+        {/* FILTROS */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-medium flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary" /> Lista de cursos
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Search className="h-4 w-4 text-primary" /> Buscar cursos
             </CardTitle>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <table className="min-w-full table-auto text-sm">
-              <thead className="bg-muted text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-2 text-left">ID</th>
-                  <th className="px-4 py-2 text-left">Nombre</th>
-                  <th className="px-4 py-2 text-left">Modalidad</th>
-                  <th className="px-4 py-2 text-left">Fechas</th>
-                  <th className="px-4 py-2 text-left">Arancel</th>
-                  <th className="px-4 py-2 text-left">Inscriptos</th>
-                  <th className="px-4 py-2 text-left">Estado</th>
-                  <th className="px-4 py-2 text-left">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cursosList.length > 0 ? (
-                  cursosList.map((curso, i) => (
+
+          <CardContent>
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Ej: programación, presencial, 15000…"
+            />
+
+            <div className="flex items-center gap-3 mt-4">
+              <Switch
+                checked={soloActivos}
+                onCheckedChange={setSoloActivos}
+                id="solo-activos"
+              />
+              <Label htmlFor="solo-activos" className="cursor-pointer">
+                Mostrar solo activos
+              </Label>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* TABLA */}
+        <Card className="overflow-x-auto border border-border/40 shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Layers className="h-5 w-5 text-primary" />
+              Listado de cursos
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent>
+            {filteredCursos.length === 0 ? (
+              <p className="text-center text-sm text-muted-foreground py-4">
+                No hay cursos que coincidan con la búsqueda.
+              </p>
+            ) : (
+              <table className="min-w-full table-auto text-sm">
+                <thead className="bg-muted text-muted-foreground">
+                  <tr>
+                    <th className="px-4 py-2 text-left">ID</th>
+                    <th className="px-4 py-2 text-left">Nombre</th>
+                    <th className="px-4 py-2 text-left">Modalidad</th>
+                    <th className="px-4 py-2 text-left">Fechas</th>
+                    <th className="px-4 py-2 text-left">Arancel</th>
+                    <th className="px-4 py-2 text-left">Inscriptos</th>
+                    <th className="px-4 py-2 text-left">Estado</th>
+                    <th className="px-4 py-2 text-left">Acciones</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {filteredCursos.map((curso, i) => (
                     <motion.tr
                       key={curso.id}
                       variants={fade}
@@ -117,10 +201,8 @@ export default function Index() {
                       custom={i}
                       className="border-b hover:bg-accent/10 transition-colors"
                     >
-                      {/* ID */}
                       <td className="px-4 py-2">{curso.id}</td>
 
-                      {/* NOMBRE → Show */}
                       <td className="px-4 py-2 font-medium">
                         <Link
                           href={route("cursos.show", curso.id)}
@@ -130,10 +212,10 @@ export default function Index() {
                         </Link>
                       </td>
 
-                      {/* MODALIDAD */}
-                      <td className="px-4 py-2">{getModalidadBadge(curso.modalidad)}</td>
+                      <td className="px-4 py-2">
+                        {modalidadBadge(curso.modalidad)}
+                      </td>
 
-                      {/* FECHAS */}
                       <td className="px-4 py-2">
                         {curso.fecha_inicio
                           ? `${formatFechaLocal(curso.fecha_inicio)} — ${
@@ -144,25 +226,21 @@ export default function Index() {
                           : "No establecidas"}
                       </td>
 
-                      {/* ARANCEL */}
                       <td className="px-4 py-2">
                         {curso.arancel_base
                           ? `$${curso.arancel_base.toLocaleString("es-AR")}`
                           : "—"}
                       </td>
 
-                      {/* INSCRIPTOS */}
-                      <td className="px-4 py-2">
-                        <span className="inline-flex items-center gap-1">
-                          <Users2 className="h-4 w-4 text-muted-foreground" />
-                          {curso.inscripciones_count ?? 0}
-                        </span>
+                      <td className="px-4 py-2 flex items-center gap-1">
+                        <Users2 className="h-4 w-4 text-muted-foreground" />
+                        {curso.inscripciones_count ?? 0}
                       </td>
 
-                      {/* ESTADO */}
-                      <td className="px-4 py-2">{getEstadoBadge(curso.activo)}</td>
+                      <td className="px-4 py-2">
+                        {estadoBadge(curso.activo)}
+                      </td>
 
-                      {/* ACCIONES */}
                       <td className="px-4 py-2">
                         <div className="flex gap-2">
                           {/* Editar */}
@@ -179,7 +257,7 @@ export default function Index() {
                               variant="destructive"
                               disabled
                               className="opacity-50 cursor-not-allowed"
-                              title="Este curso no puede eliminarse porque tiene alumnos inscriptos o preinscriptos."
+                              title="Este curso no puede eliminarse porque tiene alumnos inscriptos."
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -207,8 +285,8 @@ export default function Index() {
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                   <AlertDialogAction
-                                    onClick={() => deleteCurso(curso.id)}
                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    onClick={() => deleteCurso(curso.id)}
                                   >
                                     Eliminar
                                   </AlertDialogAction>
@@ -216,20 +294,13 @@ export default function Index() {
                               </AlertDialogContent>
                             </AlertDialog>
                           )}
-
                         </div>
                       </td>
                     </motion.tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={8} className="py-6 text-center text-muted-foreground">
-                      No hay cursos registrados.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </CardContent>
         </Card>
       </motion.div>

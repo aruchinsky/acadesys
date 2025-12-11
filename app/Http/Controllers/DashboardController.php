@@ -45,10 +45,18 @@ class DashboardController extends Controller
             'profesores'    => User::role('profesor')->count(),
             'alumnos'       => User::role('alumno')->count(),
             'inscripciones' => Inscripcion::count(),
-            'pagosTotales'  => Pago::count(),
-            'ingresosMes'   => Pago::whereMonth('pagado_at', now()->month)->sum('monto'),
+
+            // 🔥 KPIs corregidos
+            'pagosTotales'  => Pago::where('anulado', false)->count(),
+            'pagosAnulados' => Pago::where('anulado', true)->count(),
+
+            'ingresosMes'   => Pago::where('anulado', false)
+                                ->whereMonth('pagado_at', now()->month)
+                                ->sum('monto'),
+
             'asistenciasMes'=> Asistencia::whereMonth('fecha', now()->month)->count(),
         ];
+
 
         return Inertia::render('Dashboards/AdminSistema', [
             'user'  => $user,
@@ -63,8 +71,13 @@ class DashboardController extends Controller
     {
         $stats = [
             'inscripcionesPendientes' => Inscripcion::where('estado', 'pendiente')->count(),
-            'pagosHoy'                => Pago::whereDate('pagado_at', now())->sum('monto'),
-            'totalCursos'             => Curso::count(),
+
+            // 🔥 Solo pagos válidos (NO anulados)
+            'pagosHoy' => Pago::where('anulado', false)
+                ->whereDate('pagado_at', now())
+                ->sum('monto'),
+
+            'totalCursos' => Curso::count(),
         ];
 
         return Inertia::render('Dashboards/Administrativo', [
@@ -72,6 +85,7 @@ class DashboardController extends Controller
             'stats' => $stats,
         ]);
     }
+
 
     /**
      * 🎓 Dashboard Profesor
