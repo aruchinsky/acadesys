@@ -36,6 +36,8 @@ export default function Create() {
 
   const { data, setData, post, processing, errors } = useForm({
     name: "",
+    nombre: "",
+    apellido: "",
     email: "",
     dni: "",
     telefono: "",
@@ -49,7 +51,7 @@ export default function Create() {
     post(route("usuarios.store"))
   }
 
-  // Detectar si hay datos escritos
+  // Detectar si el formulario tiene datos escritos
   const isFormDirty = Object.values(data).some((val) => val.trim() !== "")
 
   const handleCancel = () => {
@@ -89,7 +91,32 @@ export default function Create() {
                 <h3 className="text-sm font-semibold mb-3 text-muted-foreground">
                   Datos personales
                 </h3>
+
                 <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="nombre">Nombre</Label>
+                    <Input
+                      id="nombre"
+                      value={data.nombre}
+                      onChange={(e) => setData("nombre", e.target.value)}
+                    />
+                    {errors.nombre && (
+                      <p className="text-sm text-destructive">{errors.nombre}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="apellido">Apellido</Label>
+                    <Input
+                      id="apellido"
+                      value={data.apellido}
+                      onChange={(e) => setData("apellido", e.target.value)}
+                    />
+                    {errors.apellido && (
+                      <p className="text-sm text-destructive">{errors.apellido}</p>
+                    )}
+                  </div>
+
                   <div>
                     <Label htmlFor="dni">DNI</Label>
                     <Input
@@ -101,6 +128,7 @@ export default function Create() {
                       <p className="text-sm text-destructive">{errors.dni}</p>
                     )}
                   </div>
+
                   <div>
                     <Label htmlFor="telefono">Teléfono</Label>
                     <Input
@@ -110,20 +138,23 @@ export default function Create() {
                       placeholder="Opcional"
                     />
                     {errors.telefono && (
-                      <p className="text-sm text-destructive">{errors.telefono}</p>
+                      <p className="text-sm text-destructive">
+                        {errors.telefono}
+                      </p>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* CUENTA */}
+              {/* INFORMACIÓN DE LA CUENTA */}
               <div className="rounded-lg border p-4">
                 <h3 className="text-sm font-semibold mb-3 text-muted-foreground">
                   Información de la cuenta
                 </h3>
+
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="name">Nombre</Label>
+                    <Label htmlFor="name">Nombre de usuario</Label>
                     <Input
                       id="name"
                       value={data.name}
@@ -133,6 +164,7 @@ export default function Create() {
                       <p className="text-sm text-destructive">{errors.name}</p>
                     )}
                   </div>
+
                   <div>
                     <Label htmlFor="email">Email</Label>
                     <Input
@@ -153,6 +185,7 @@ export default function Create() {
                 <h3 className="text-sm font-semibold mb-3 text-muted-foreground">
                   Contraseña
                 </h3>
+
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="password">Contraseña</Label>
@@ -163,9 +196,12 @@ export default function Create() {
                       onChange={(e) => setData("password", e.target.value)}
                     />
                     {errors.password && (
-                      <p className="text-sm text-destructive">{errors.password}</p>
+                      <p className="text-sm text-destructive">
+                        {errors.password}
+                      </p>
                     )}
                   </div>
+
                   <div>
                     <Label htmlFor="password_confirmation">
                       Confirmar contraseña
@@ -188,6 +224,7 @@ export default function Create() {
                   <Shield className="h-4 w-4 text-primary" />
                   Rol de usuario
                 </h3>
+
                 <div className="grid sm:grid-cols-2 gap-2">
                   {(roles as Role[]).map((r) => (
                     <label
@@ -205,6 +242,7 @@ export default function Create() {
                     </label>
                   ))}
                 </div>
+
                 {errors.role && (
                   <p className="text-sm text-destructive">{errors.role}</p>
                 )}
@@ -215,6 +253,7 @@ export default function Create() {
                 <Button type="button" variant="outline" onClick={handleCancel}>
                   Cancelar
                 </Button>
+
                 <Button type="submit" disabled={processing}>
                   {processing && (
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -227,7 +266,7 @@ export default function Create() {
         </Card>
       </motion.div>
 
-      {/* MODAL CONFIRMAR SALIDA */}
+      {/* MODAL DE CONFIRMACIÓN */}
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -239,10 +278,12 @@ export default function Create() {
               ¿Seguro que deseas cancelar? Los datos ingresados se perderán.
             </AlertDialogDescription>
           </AlertDialogHeader>
+
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setShowConfirm(false)}>
               Continuar editando
             </AlertDialogCancel>
+
             <AlertDialogAction
               onClick={() => router.visit(route("usuarios.index"))}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

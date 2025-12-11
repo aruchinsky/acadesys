@@ -43,6 +43,8 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'nombre' => ['required', 'string', 'max:255'],
+            'apellido' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
             'dni' => ['required', 'string', 'max:15', 'unique:users,dni'],
             'telefono' => ['nullable', 'string', 'max:20'],
@@ -52,6 +54,8 @@ class UserController extends Controller
 
         $user = User::create([
             'name' => $validated['name'],
+            'nombre' => $validated['nombre'],
+            'apellido' => $validated['apellido'],
             'email' => $validated['email'],
             'dni' => $validated['dni'],
             'telefono' => $validated['telefono'],
@@ -62,6 +66,7 @@ class UserController extends Controller
 
         return redirect()->route('usuarios.index')->with('success', 'Usuario creado correctamente.');
     }
+
 
     /**
      * Mostrar detalles de usuario.
@@ -95,6 +100,8 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'nombre' => ['required', 'string', 'max:255'],
+            'apellido' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email,' . $usuario->id],
             'dni' => ['required', 'string', 'max:15', 'unique:users,dni,' . $usuario->id],
             'telefono' => ['nullable', 'string', 'max:20'],
@@ -104,6 +111,8 @@ class UserController extends Controller
 
         $usuario->update([
             'name' => $validated['name'],
+            'nombre' => $validated['nombre'],
+            'apellido' => $validated['apellido'],
             'email' => $validated['email'],
             'dni' => $validated['dni'],
             'telefono' => $validated['telefono'],
@@ -112,11 +121,11 @@ class UserController extends Controller
                 : $usuario->password,
         ]);
 
-        // Asignar rol (sin duplicar)
         $usuario->syncRoles([$validated['role']]);
 
         return redirect()->route('usuarios.index')->with('success', 'Usuario actualizado correctamente.');
     }
+
 
     /**
      * Eliminar usuario.
