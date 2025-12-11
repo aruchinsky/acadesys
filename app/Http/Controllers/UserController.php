@@ -73,12 +73,39 @@ class UserController extends Controller
      */
     public function show(User $usuario)
     {
-        $usuario->load(['roles:id,name', 'inscripciones.curso', 'pagos']);
+        // Obtener rol real
+        $rol = $usuario->roles()->pluck('name')->first() ?? 'alumno';
+
+        // Relaciones base
+        $usuario->load([
+            'roles:id,name',
+            'inscripciones.curso',
+            'pagos',
+        ]);
+
+        // Dependiendo del rol, cargar relaciones reales
+        if ($rol === 'profesor') {
+            $usuario->load(['cursosDictados']);
+        }
+
+        if ($rol === 'administrativo') {
+            $usuario->load(['pagosRealizados']);
+        }
+
+        if ($rol === 'superusuario') {
+            $usuario->load([
+                'cursosDictados',
+                'pagosRealizados',
+            ]);
+        }
 
         return Inertia::render('Usuarios/Show', [
             'usuario' => $usuario,
+            'rol' => $rol,
         ]);
     }
+
+
 
     /**
      * Mostrar formulario de edición.

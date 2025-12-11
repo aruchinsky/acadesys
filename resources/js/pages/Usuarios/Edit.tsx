@@ -30,16 +30,26 @@ const breadcrumbs: BreadcrumbItem[] = [
   { title: "Editar Usuario", href: "#" },
 ]
 
+type EditPageProps = pageProps & {
+  user: UserWithRoles & {
+    nombre: string
+    apellido: string
+  }
+  roles: Role[]
+}
+
 export default function Edit() {
-  const { user, roles } = usePage<pageProps & { user: UserWithRoles; roles: Role[] }>().props
+  const { user, roles } = usePage<EditPageProps>().props
+
   const [showConfirm, setShowConfirm] = useState(false)
 
-  // 🔧 Estado inicial del formulario
   const { data, setData, put, processing, errors } = useForm({
-    name: user.name || "",
-    email: user.email || "",
-    dni: user.dni || "",
-    telefono: user.telefono || "",
+    name: user.name,
+    nombre: user.nombre,
+    apellido: user.apellido,
+    email: user.email,
+    dni: user.dni,
+    telefono: user.telefono ?? "",
     password: "",
     password_confirmation: "",
     role: user.roles[0]?.name ?? "",
@@ -49,6 +59,8 @@ export default function Edit() {
   const isFormDirty = useMemo(() => {
     return (
       data.name !== user.name ||
+      data.nombre !== (user as any).nombre ||
+      data.apellido !== (user as any).apellido ||
       data.email !== user.email ||
       data.dni !== user.dni ||
       data.telefono !== (user.telefono || "") ||
@@ -99,14 +111,75 @@ export default function Edit() {
 
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* INFORMACIÓN DE CUENTA */}
+              {/* DATOS PERSONALES */}
+              <div className="rounded-lg border p-4">
+                <h3 className="text-sm font-semibold mb-3 text-muted-foreground">
+                  Datos personales
+                </h3>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="nombre">Nombre</Label>
+                    <Input
+                      id="nombre"
+                      value={data.nombre}
+                      onChange={(e) => setData("nombre", e.target.value)}
+                    />
+                    {errors.nombre && (
+                      <p className="text-sm text-destructive">{errors.nombre}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="apellido">Apellido</Label>
+                    <Input
+                      id="apellido"
+                      value={data.apellido}
+                      onChange={(e) => setData("apellido", e.target.value)}
+                    />
+                    {errors.apellido && (
+                      <p className="text-sm text-destructive">{errors.apellido}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="dni">DNI</Label>
+                    <Input
+                      id="dni"
+                      value={data.dni}
+                      onChange={(e) => setData("dni", e.target.value)}
+                    />
+                    {errors.dni && (
+                      <p className="text-sm text-destructive">{errors.dni}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="telefono">Teléfono</Label>
+                    <Input
+                      id="telefono"
+                      value={data.telefono}
+                      onChange={(e) => setData("telefono", e.target.value)}
+                      placeholder="Opcional"
+                    />
+                    {errors.telefono && (
+                      <p className="text-sm text-destructive">
+                        {errors.telefono}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* INFORMACIÓN DE LA CUENTA */}
               <div className="rounded-lg border p-4">
                 <h3 className="text-sm font-semibold mb-3 text-muted-foreground">
                   Información de la cuenta
                 </h3>
+
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="name">Nombre</Label>
+                    <Label htmlFor="name">Nombre de usuario</Label>
                     <Input
                       id="name"
                       value={data.name}
@@ -116,6 +189,7 @@ export default function Edit() {
                       <p className="text-sm text-destructive">{errors.name}</p>
                     )}
                   </div>
+
                   <div>
                     <Label htmlFor="email">Email</Label>
                     <Input
@@ -129,33 +203,6 @@ export default function Edit() {
                     )}
                   </div>
                 </div>
-
-                <div className="grid md:grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <Label htmlFor="dni">DNI</Label>
-                    <Input
-                      id="dni"
-                      value={data.dni}
-                      onChange={(e) => setData("dni", e.target.value)}
-                    />
-                    {errors.dni && (
-                      <p className="text-sm text-destructive">{errors.dni}</p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="telefono">Teléfono</Label>
-                    <Input
-                      id="telefono"
-                      type="tel"
-                      value={data.telefono}
-                      onChange={(e) => setData("telefono", e.target.value)}
-                      placeholder="Opcional"
-                    />
-                    {errors.telefono && (
-                      <p className="text-sm text-destructive">{errors.telefono}</p>
-                    )}
-                  </div>
-                </div>
               </div>
 
               {/* CONTRASEÑA */}
@@ -166,6 +213,7 @@ export default function Edit() {
                 <p className="text-xs text-muted-foreground mb-3">
                   Dejar en blanco para mantener la contraseña actual.
                 </p>
+
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="password">Nueva contraseña</Label>
@@ -176,9 +224,12 @@ export default function Edit() {
                       onChange={(e) => setData("password", e.target.value)}
                     />
                     {errors.password && (
-                      <p className="text-sm text-destructive">{errors.password}</p>
+                      <p className="text-sm text-destructive">
+                        {errors.password}
+                      </p>
                     )}
                   </div>
+
                   <div>
                     <Label htmlFor="password_confirmation">
                       Confirmar contraseña
@@ -201,8 +252,9 @@ export default function Edit() {
                   <Shield className="h-4 w-4 text-primary" />
                   Rol de usuario
                 </h3>
+
                 <div className="grid sm:grid-cols-2 gap-2">
-                  {(roles as Role[]).map((r) => (
+                  {roles.map((r) => (
                     <label
                       key={r.id}
                       className="flex items-center gap-2 text-sm cursor-pointer"
@@ -218,6 +270,7 @@ export default function Edit() {
                     </label>
                   ))}
                 </div>
+
                 {errors.role && (
                   <p className="text-sm text-destructive">{errors.role}</p>
                 )}
@@ -228,11 +281,10 @@ export default function Edit() {
                 <Button type="button" variant="outline" onClick={handleCancel}>
                   Cancelar
                 </Button>
+
                 <Button type="submit" disabled={processing}>
-                  {processing && (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  )}
-                  Guardar Cambios
+                  {processing && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                  Guardar cambios
                 </Button>
               </div>
             </form>
@@ -252,10 +304,12 @@ export default function Edit() {
               ¿Seguro que deseas cancelar? Los cambios realizados se perderán.
             </AlertDialogDescription>
           </AlertDialogHeader>
+
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setShowConfirm(false)}>
               Continuar editando
             </AlertDialogCancel>
+
             <AlertDialogAction
               onClick={() => router.visit(route("usuarios.index"))}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
