@@ -1,41 +1,32 @@
-import { Head, useForm, usePage, router} from "@inertiajs/react"
+import { Head, useForm, usePage, router } from "@inertiajs/react"
 import AppLayout from "@/layouts/app-layout"
 import { pageProps, Curso } from "@/types"
 import { motion } from "framer-motion"
 import {
-  CalendarDays,
-  CheckCircle2,
   UserCheck,
   Save,
   Users,
   NotebookText,
+  CalendarDays,
+  History,
 } from "lucide-react"
-import { Link } from "@inertiajs/react"
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
   Select,
+  SelectTrigger,
   SelectContent,
   SelectItem,
-  SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { formatFechaSinOffset } from "@/lib/utils"
-import { useState, useEffect } from "react"
-import { toast } from "sonner"
+import { useState } from "react"
+import { Link } from "@inertiajs/react"
 
-
-
-export default function ProfesorAsistencias() {
+export default function AdministrativoAsistencia() {
   const { cursos, fechaHoy } = usePage<pageProps>().props
   const cursosList: Curso[] = Array.isArray(cursos) ? cursos : []
 
@@ -43,73 +34,52 @@ export default function ProfesorAsistencias() {
   const [fecha, setFecha] = useState<string>(fechaHoy as string)
   const [asistencias, setAsistencias] = useState<
     Record<number, { presente: boolean; observacion: string }>
-    >({});
+  >({})
 
-    // Si viene ?curso_id= en la URL, seleccionarlo automáticamente
-    useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const cursoParam = params.get("curso_id")
-    if (cursoParam) {
-        setCursoSeleccionado(Number(cursoParam))
-    }
-    }, [])
-
-  
-
-  const { processing, post } = useForm({})
+  const { processing } = useForm({})
 
   const cursoActual = cursosList.find((c) => c.id === cursoSeleccionado)
 
-    const toggleAsistencia = (userId: number) => {
+  const toggleAsistencia = (userId: number) => {
     setAsistencias((prev) => ({
-        ...prev,
-        [userId]: {
+      ...prev,
+      [userId]: {
         ...prev[userId],
         presente: !prev[userId]?.presente,
         observacion: prev[userId]?.observacion || "",
-        },
-    }));
-    };
+      },
+    }))
+  }
 
-    const handleObservacionChange = (userId: number, value: string) => {
+  const handleObservacionChange = (userId: number, value: string) => {
     setAsistencias((prev) => ({
-        ...prev,
-        [userId]: {
+      ...prev,
+      [userId]: {
         ...prev[userId],
         observacion: value,
         presente: prev[userId]?.presente ?? false,
-        },
-    }));
-    };
-
-
-    // Guardar asistencia
-const handleGuardar = () => {
-  if (!cursoSeleccionado) {
-    router.reload({
-      preserveUrl: true,
-    });
-    return;
+      },
+    }))
   }
 
+  const handleGuardar = () => {
+    if (!cursoSeleccionado) return
+
     router.post(
-        route("profesor.asistencias.store"),
-        {
-            curso_id: cursoSeleccionado,
-            fecha,
-            asistencias,
+      route("administrativo.asistencias.store"),
+      {
+        curso_id: cursoSeleccionado,
+        fecha,
+        asistencias,
+      },
+      {
+        preserveState: true,
+        onSuccess: () => {
+          router.visit(route("dashboard"))
         },
-        {
-            preserveUrl: true,
-            preserveState: true,
-            onSuccess: () => {
-            router.visit(route("profesor.cursos.show", cursoSeleccionado))
-            },
-        }
-    );
-};
-
-
+      }
+    )
+  }
 
   const fade = {
     hidden: { opacity: 0, y: 10 },
@@ -123,8 +93,8 @@ const handleGuardar = () => {
   return (
     <AppLayout
       breadcrumbs={[
-        { title: "Mis Cursos", href: route("profesor.cursos.index") },
-        { title: "Asistencias", href: route("profesor.asistencias.index") },
+        { title: "Panel Administrativo", href: route("dashboard") },
+        { title: "Asistencias", href: route("administrativo.asistencias.index") },
       ]}
     >
       <Head title="Registrar Asistencias" />
@@ -134,27 +104,50 @@ const handleGuardar = () => {
         animate={{ opacity: 1, y: 0 }}
         className="p-6 flex flex-col gap-6"
       >
-        {/* ENCABEZADO */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 className="text-2xl font-semibold flex items-center gap-2 text-foreground">
-            <UserCheck className="h-6 w-6 text-primary" /> Registro de Asistencias
-          </h1>
-            <div className="flex flex-col sm:flex-row gap-2">
-            <Button
-                onClick={handleGuardar}
-                disabled={!cursoSeleccionado || processing}
-                className="gap-2"
-            >
-                <Save className="h-4 w-4" /> Guardar Asistencia
-            </Button>
-            <Button asChild variant="outline" className="gap-2">
-                <Link href={route("profesor.cursos.index")}>
-                <Users className="h-4 w-4" /> Volver a mis cursos
-                </Link>
-            </Button>
-            </div>
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+  <h1 className="text-2xl font-semibold flex items-center gap-2 text-foreground">
+    <UserCheck className="h-6 w-6 text-primary" /> Registro de Asistencias
+  </h1>
 
-        </div>
+  <div className="flex flex-col sm:flex-row gap-2">
+
+    {/* BOTÓN GUARDAR */}
+    <Button
+      onClick={handleGuardar}
+      disabled={!cursoSeleccionado || processing}
+      className="gap-2"
+    >
+      <Save className="h-4 w-4" /> Guardar Asistencia
+    </Button>
+
+    {/* BOTÓN HISTORIAL */}
+    <Button
+      asChild
+      variant="secondary"
+      disabled={!cursoSeleccionado}
+      className="gap-2 px-4 py-2 text-sm"
+    >
+      <Link
+        href={
+          cursoSeleccionado
+            ? route("administrativo.asistencias.historial", { curso: cursoSeleccionado })
+            : "#"
+        }
+      >
+        <History className="h-4 w-4" /> Ver historial
+      </Link>
+    </Button>
+
+    {/* BOTÓN VOLVER */}
+    <Button asChild variant="outline" className="gap-2">
+      <Link href={route("dashboard")}>
+        <Users className="h-4 w-4" /> Volver al panel
+      </Link>
+    </Button>
+
+  </div>
+</div>
+
 
         {/* FILTROS */}
         <Card>
@@ -200,8 +193,7 @@ const handleGuardar = () => {
           <Card className="shadow-sm border border-border/50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <CalendarDays className="h-5 w-5 text-primary" />{" "}
-                {cursoActual.nombre}
+                <CalendarDays className="h-5 w-5 text-primary" /> {cursoActual.nombre}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
                 {fecha} — {cursoActual.inscripciones?.length ?? 0} alumnos inscriptos
@@ -234,20 +226,21 @@ const handleGuardar = () => {
                         </td>
                         <td className="px-4 py-2">{ins.usuario?.dni || "—"}</td>
                         <td className="px-4 py-2 text-center">
-                        <Checkbox
+                          <Checkbox
                             checked={!!asistencias[ins.user_id]?.presente}
                             onCheckedChange={() => toggleAsistencia(ins.user_id)}
-                            className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
-                        />
+                          />
                         </td>
                         <td className="px-4 py-2">
-                        <Input
+                          <Input
                             type="text"
                             placeholder="Observación..."
                             value={asistencias[ins.user_id]?.observacion || ""}
-                            onChange={(e) => handleObservacionChange(ins.user_id, e.target.value)}
+                            onChange={(e) =>
+                              handleObservacionChange(ins.user_id, e.target.value)
+                            }
                             className="text-sm"
-                        />
+                          />
                         </td>
                       </motion.tr>
                     ))}

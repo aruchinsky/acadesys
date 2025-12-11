@@ -47,14 +47,14 @@ export default function AdminSistema() {
     { titulo: "Cursos", icono: BookOpen, href: route("cursos.index") },
     { titulo: "Usuarios", icono: Users, href: route("usuarios.index") },
     { titulo: "Pagos", icono: Wallet, href: route("administrativo.pagos.index") },
-    { titulo: "Asistencias", icono: ClipboardList, href: route("asistencias.index") },
+    { titulo: "Asistencias", icono: ClipboardList, href: route("superusuario.asistencias.index") },
     { titulo: "Roles y Permisos", icono: Settings2, href: route("roles.index") },
     { titulo: "Reportes", icono: BarChart3, href: "#" },
   ]
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title="Dashboard Administrador" />
+      <Head title="Dashboard Superusuario" />
 
       {/* ===== HERO ===== */}
       <motion.div

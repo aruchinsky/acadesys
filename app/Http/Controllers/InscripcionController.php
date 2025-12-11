@@ -22,7 +22,7 @@ class InscripcionController extends Controller
                 ->latest()
                 ->get();
         } else {
-            $inscripciones = Inscripcion::with(['alumno', 'curso'])
+            $inscripciones = Inscripcion::with(['usuario', 'curso'])
                 ->latest()
                 ->get();
         }

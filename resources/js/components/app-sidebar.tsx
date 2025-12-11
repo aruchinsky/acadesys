@@ -49,9 +49,9 @@ export function AppSidebar() {
       { title: "Cursos", href: route("cursos.index"), icon: BookOpen },
       { title: "Inscripciones", href: route("inscripciones.index"), icon: ClipboardList },
       { title: "Pagos", href: route("administrativo.pagos.index"), icon: Wallet },
-      { title: "Asistencias", href: route("asistencias.index"), icon: CheckCircle2 },
-      { title: "Reportes", href: "#", icon: BarChart3 },
-      { title: "Configuración", href: "#", icon: Settings2 },
+      { title: "Asistencias", href: route("superusuario.asistencias.index"), icon: CheckCircle2 },
+      // { title: "Reportes", href: "#", icon: BarChart3 },
+      // { title: "Configuración", href: "#", icon: Settings2 },
     )
   }
 
@@ -62,8 +62,8 @@ export function AppSidebar() {
       { title: "Cursos", href: route("cursos.index"), icon: BookOpen },
       { title: "Inscripciones", href: route("inscripciones.index"), icon: ClipboardList },
       { title: "Pagos", href: route("administrativo.pagos.index"), icon: Wallet },
-      { title: "Asistencias", href: route("asistencias.index"), icon: CheckCircle2 },
-      { title: "Reportes", href: "#", icon: BarChart3 },
+      { title: "Asistencias", href: route("administrativo.asistencias.index"), icon: CheckCircle2 },
+      // { title: "Reportes", href: "#", icon: BarChart3 },
     )
   }
 

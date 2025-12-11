@@ -78,13 +78,32 @@ class DashboardController extends Controller
      */
     private function dashboardProfesor($user)
     {
-        $cursos = $user->cursosDictados()->withCount('inscripciones')->get();
+        // Cursos dictados con conteo de inscripciones
+        $cursos = $user->cursosDictados()
+            ->withCount('inscripciones')
+            ->get();
+
+        // Total de alumnos sumando inscripciones de todos sus cursos
+        $totalAlumnos = $cursos->sum('inscripciones_count');
+
+        // Última asistencia registrada por el profesor
+        $ultimaAsistencia = Asistencia::whereHas('inscripcion.curso.profesores', fn($q) =>
+            $q->where('users.id', $user->id)
+        )
+        ->latest('fecha')
+        ->value('fecha');
 
         return Inertia::render('Dashboards/Profesor', [
-            'user'   => $user,
-            'cursos' => $cursos,
+            'user'          => $user,
+            'cursos'        => $cursos,
+            'stats' => [
+                'cursosAsignados' => $cursos->count(),
+                'alumnosActivos'  => $totalAlumnos,
+                'ultimaClase'     => $ultimaAsistencia ? $ultimaAsistencia : null,
+            ]
         ]);
     }
+
 
     /**
      * 🧑‍💻 Dashboard Alumno

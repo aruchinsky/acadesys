@@ -62,9 +62,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->parameters(['inscripciones' => 'inscripcion'])
         ->middleware('role:superusuario|administrativo|profesor|alumno');
 
-    Route::resource('asistencias', AsistenciaController::class)
-        ->parameters(['asistencias' => 'asistencia'])
-        ->middleware('role:superusuario|administrativo|profesor|alumno');
 
 
     // ============================================================
@@ -78,9 +75,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/profesor/cursos/{curso}', [CursoController::class, 'showProfesor'])
             ->name('profesor.cursos.show');
 
+        // Ver cursos y tomar asistencia hoy
         Route::get('/profesor/asistencias', [AsistenciaController::class, 'index'])
             ->name('profesor.asistencias.index');
 
+        // Guardar asistencia
+        Route::post('/profesor/asistencias', [AsistenciaController::class, 'store'])
+            ->name('profesor.asistencias.store');
+
+        // Historial por curso
         Route::get('/profesor/cursos/{curso}/asistencias', [AsistenciaController::class, 'historial'])
             ->name('profesor.asistencias.historial');
     });
@@ -131,6 +134,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ============================================================
     Route::middleware('role:superusuario|administrativo')->group(function () {
 
+        // Asistencias - Administrativo
+        Route::get('/administrativo/asistencias', [AsistenciaController::class, 'administrativoIndex'])
+            ->name('administrativo.asistencias.index');
+
+        Route::post('/administrativo/asistencias', [AsistenciaController::class, 'store'])
+            ->name('administrativo.asistencias.store');
+
+        // Historial por curso
+        Route::get('/administrativo/asistencias/{curso}/historial', [AsistenciaController::class, 'historial'])
+            ->name('administrativo.asistencias.historial');
+
+
         Route::post('/administrativo/pagos/{pago}/anular', [PagoController::class, 'anular'])
             ->name('administrativo.pagos.anular');
 
@@ -166,6 +181,18 @@ Route::middleware(['auth', 'verified', 'role:superusuario'])->group(function () 
 
     Route::resource('usuarios', UserController::class)
         ->parameters(['usuarios' => 'usuario']);
+
+    // Asistencias - Superusuario
+    Route::get('/superusuario/asistencias', [AsistenciaController::class, 'superusuarioIndex'])
+        ->name('superusuario.asistencias.index');
+
+    Route::post('/superusuario/asistencias', [AsistenciaController::class, 'store'])
+        ->name('superusuario.asistencias.store');
+        
+    // Historial por curso
+    Route::get('/superusuario/asistencias/{curso}/historial', [AsistenciaController::class, 'historial'])
+        ->name('superusuario.asistencias.historial');
+
 
     Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
     Route::get('/roles/create', [RoleController::class, 'create'])->name('roles.create');

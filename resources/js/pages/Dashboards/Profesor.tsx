@@ -3,28 +3,49 @@ import AppLayout from "@/layouts/app-layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
-import { BookOpen, ClipboardList, FileText, Users2, BarChart3, Clock3, Sparkles, GraduationCap } from "lucide-react"
-import { SharedData } from "@/types"
+import { BookOpen, ClipboardList, GraduationCap, Users2, Clock3, Sparkles } from "lucide-react"
+import { SharedData, Curso } from "@/types"
 
 export default function Profesor() {
-  const { auth } = usePage<SharedData>().props
-  const user = auth.user
+  const { user, cursos, stats } = usePage<{
+    user: any
+    cursos: Curso[]
+    stats: {
+      cursosAsignados: number
+      alumnosActivos: number
+      ultimaClase: string | null
+    }
+  }>().props
+
   const opciones = [
-    { titulo: "Mis Cursos", descripcion: "Gestioná tus clases y alumnos.", icono: BookOpen, href: route("profesor.cursos.index") },
-    { titulo: "Asistencias", descripcion: "Registrá la asistencia diaria.", icono: ClipboardList, href: route("asistencias.index") },
-    // { titulo: "Pagos", descripcion: "Consultá pagos de tus cursos.", icono: FileText, href: route("pagos.index") },
+    {
+      titulo: "Mis Cursos",
+      descripcion: "Gestioná tus clases, horarios y alumnos.",
+      icono: BookOpen,
+      href: route("profesor.cursos.index"),
+    },
+    {
+      titulo: "Asistencias",
+      descripcion: "Registrá la asistencia diaria de tus cursos.",
+      icono: ClipboardList,
+      href: route("profesor.asistencias.index"),
+    },
   ]
-  const stats = [
-    { label: "Cursos asignados", value: 3, icon: BookOpen },
-    { label: "Alumnos activos", value: 45, icon: Users2 },
-    { label: "Promedio general", value: "8.1", icon: BarChart3 },
-    { label: "Última clase", value: "Ayer", icon: Clock3 },
-  ]
-  const fade = { hidden: { opacity: 0, y: 20 }, visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.05 } }) }
+
+  const fade = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: { delay: i * 0.05 },
+    }),
+  }
 
   return (
     <AppLayout>
       <Head title="Dashboard Profesor" />
+
+      {/* HEADER */}
       <motion.div
         initial={{ opacity: 0, y: -15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -35,21 +56,71 @@ export default function Profesor() {
           <GraduationCap className="h-6 w-6 text-primary" /> ¡Hola, {user?.nombre_completo}!
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Este es tu espacio docente: gestioná alumnos, clases y asistencias.
+          Este es tu espacio docente. Revisá tus cursos, alumnos y asistencias.
         </p>
       </motion.div>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 px-2 sm:px-4 md:px-8">
+      {/* KPI DOCENTES */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 px-2 sm:px-4 md:px-8"
+      >
+        <Card className="hover:shadow-md border-border transition-all">
+          <CardContent className="flex items-center gap-3 py-5">
+            <div className="p-3 bg-primary/10 rounded-full">
+              <BookOpen className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Cursos asignados</p>
+              <p className="text-lg font-semibold">{stats.cursosAsignados}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-md border-border transition-all">
+          <CardContent className="flex items-center gap-3 py-5">
+            <div className="p-3 bg-primary/10 rounded-full">
+              <Users2 className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Alumnos activos</p>
+              <p className="text-lg font-semibold">{stats.alumnosActivos}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-md border-border transition-all">
+          <CardContent className="flex items-center gap-3 py-5">
+            <div className="p-3 bg-primary/10 rounded-full">
+              <Clock3 className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Última clase</p>
+              <p className="text-lg font-semibold">
+                {stats.ultimaClase ? stats.ultimaClase : "Sin registros"}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* OPCIONES */}
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 px-2 sm:px-4 md:px-8 pb-10">
         {opciones.map((op, i) => (
           <motion.div key={op.titulo} variants={fade} initial="hidden" animate="visible" custom={i}>
-            <Card className="h-full hover:shadow-md border-border transition-all">
+            <Card className="hover:shadow-md border-border transition-all h-full flex flex-col">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                  <op.icono className="h-5 w-5 text-primary" /> {op.titulo}
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <op.icono className="h-5 w-5 text-primary" />
+                  {op.titulo}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+
+              <CardContent className="flex flex-col justify-between flex-1 py-3">
                 <p className="text-sm text-muted-foreground mb-3">{op.descripcion}</p>
+
                 <Button asChild size="sm" className="w-full">
                   <Link href={op.href}>
                     <Sparkles className="h-4 w-4 mr-1" /> Ingresar
@@ -60,27 +131,6 @@ export default function Profesor() {
           </motion.div>
         ))}
       </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 px-2 sm:px-4 md:px-8"
-      >
-        {stats.map((item, i) => (
-          <Card key={i} className="hover:shadow-md border-border transition-all">
-            <CardContent className="flex items-center gap-3 py-5">
-              <div className="p-3 bg-primary/10 rounded-full">
-                <item.icon className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{item.label}</p>
-                <p className="text-lg font-semibold">{item.value}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </motion.div>
     </AppLayout>
   )
 }

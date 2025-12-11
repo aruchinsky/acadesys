@@ -7,6 +7,7 @@ use App\Models\Inscripcion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use App\Models\Curso;
 
 class AsistenciaController extends Controller
 {
@@ -25,6 +26,44 @@ class AsistenciaController extends Controller
             'fechaHoy' => now()->toDateString(),
         ]);
     }
+
+    /**
+     * 📋 Vista de asistencias para ADMINISTRATIVO
+     * Puede ver TODOS los cursos y tomar asistencia.
+     */
+    public function administrativoIndex()
+    {
+        $cursos = Curso::with([
+            'inscripciones.usuario:id,nombre,apellido,dni'
+        ])
+        ->orderBy('nombre')
+        ->get();
+
+        return Inertia::render('Asistencias/AdministrativoAsistencia', [
+            'cursos'   => $cursos,
+            'fechaHoy' => now()->toDateString(),
+        ]);
+    }
+
+
+    /**
+     * 🛠️ Vista de asistencias para SUPERUSUARIO
+     * Tiene acceso TOTAL igual que administrativo, pero con vista propia.
+     */
+    public function superusuarioIndex()
+    {
+        $cursos = Curso::with([
+            'inscripciones.usuario:id,nombre,apellido,dni'
+        ])
+        ->orderBy('nombre')
+        ->get();
+
+        return Inertia::render('Asistencias/SuperusuarioAsistencia', [
+            'cursos'   => $cursos,
+            'fechaHoy' => now()->toDateString(),
+        ]);
+    }
+
 
 
     public function create()
@@ -78,21 +117,26 @@ class AsistenciaController extends Controller
 
     public function historial($cursoId)
     {
-        $curso = \App\Models\Curso::with([
+        $user = Auth::user();
+        $rol = $user->getRoleNames()->first(); // 🔥 enviamos el rol al frontend
+
+        $curso = Curso::with([
             'inscripciones.usuario:id,nombre,apellido,dni',
             'inscripciones.asistencias' => fn($q) => $q->orderBy('fecha', 'asc')
         ])->findOrFail($cursoId);
 
-        $fechas = \App\Models\Asistencia::whereIn('inscripcion_id', $curso->inscripciones->pluck('id'))
+        $fechas = Asistencia::whereIn('inscripcion_id', $curso->inscripciones->pluck('id'))
             ->distinct()
             ->orderBy('fecha', 'asc')
             ->pluck('fecha');
 
-        return Inertia::render('Cursos/ProfesorAsistenciasHistorial', [
+        return Inertia::render('Asistencias/Historial', [
             'curso' => $curso,
             'fechas' => $fechas,
+            'rol' => $rol, // 🔥 AÑADIDO
         ]);
     }
+
 
     public function alumnoIndex()
     {

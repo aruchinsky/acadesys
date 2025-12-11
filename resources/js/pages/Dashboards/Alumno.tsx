@@ -35,12 +35,12 @@ export default function Alumno() {
       icono: ClipboardList,
       href: route("alumno.asistencias.index"),
     },
-    {
-      titulo: "Calendario",
-      descripcion: "Fechas importantes y próximos exámenes.",
-      icono: CalendarCheck,
-      href: "#",
-    },
+    // {
+    //   titulo: "Calendario",
+    //   descripcion: "Fechas importantes y próximos exámenes.",
+    //   icono: CalendarCheck,
+    //   href: "#",
+    // },
   ]
 
   const fade = {

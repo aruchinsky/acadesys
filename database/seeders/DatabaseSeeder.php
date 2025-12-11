@@ -6,9 +6,6 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
         // Limpia cache de roles y permisos
@@ -17,7 +14,10 @@ class DatabaseSeeder extends Seeder
         // 1️⃣ Crear roles y permisos
         $this->call(RolesAndPermissionsSeeder::class);
 
-        // 2️⃣ Poblado completo del sistema
-        $this->call(AcadeSysDemoSeeder::class);
+        // 2️⃣ Seeder ESPECIAL para examen (solo usuarios base)
+        $this->call(AcadeSysExamSeeder::class);
+
+        // 3️⃣ Seeder completo (DESACTIVADO para examen)
+        // $this->call(AcadeSysDemoSeeder::class);
     }
 }
