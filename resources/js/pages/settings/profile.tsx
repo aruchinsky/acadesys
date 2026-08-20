@@ -2,7 +2,6 @@ import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Form, Head, Link, usePage } from '@inertiajs/react';
 
-import DeleteUser from '@/components/delete-user';
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -18,13 +17,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Profile({
-    mustVerifyEmail,
-    status,
-}: {
-    mustVerifyEmail: boolean;
-    status?: string;
-}) {
+export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
     const { auth } = usePage<SharedData>().props;
 
     // TS FIX ✔ Si por alguna razón no hay usuario logueado:
@@ -32,9 +25,7 @@ export default function Profile({
         return (
             <AppLayout breadcrumbs={breadcrumbs}>
                 <Head title="Configuración del perfil" />
-                <div className="p-6 text-center text-red-500">
-                    No hay un usuario autenticado.
-                </div>
+                <div className="p-6 text-center text-red-500">No hay un usuario autenticado.</div>
             </AppLayout>
         );
     }
@@ -48,17 +39,9 @@ export default function Profile({
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall
-                        title="Información del perfil"
-                        description="Actualizá tu nombre y correo electrónico"
-                    />
+                    <HeadingSmall title="Información del perfil" description="Actualizá tu nombre y correo electrónico" />
 
-                    <Form
-                        method="patch"
-                        action={route('profile.update')}
-                        options={{ preserveScroll: true }}
-                        className="space-y-6"
-                    >
+                    <Form method="patch" action={route('profile.update')} options={{ preserveScroll: true }} className="space-y-6">
                         {({ processing, recentlySuccessful, errors }) => (
                             <>
                                 <div className="grid gap-2">

@@ -13,12 +13,12 @@ class Asistencia extends Model
         'inscripcion_id',
         'fecha',
         'presente',
-        'observacion'
+        'observacion',
     ];
 
     protected $casts = [
         // 'fecha' => 'date',
-        'presente' => 'boolean'
+        'presente' => 'boolean',
     ];
 
     /**
@@ -43,5 +43,4 @@ class Asistencia extends Model
             'user_id'           // FK en Inscripcion
         );
     }
-
 }

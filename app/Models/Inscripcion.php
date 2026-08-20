@@ -21,7 +21,7 @@ class Inscripcion extends Model
     ];
 
     protected $casts = [
-        'fecha_inscripcion' => 'date'
+        'fecha_inscripcion' => 'date',
     ];
 
     /**
@@ -65,5 +65,4 @@ class Inscripcion extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-
 }

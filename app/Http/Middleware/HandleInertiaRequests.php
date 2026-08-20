@@ -43,12 +43,12 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
-            //Este middleware auth, introduce el usuario autenticado en todas las vistas
+            // Este middleware auth, introduce el usuario autenticado en todas las vistas
             'auth' => [
                 'user' => $request->user(),
-                //Esto es de spatie/laravel-permission: getRoleNames() devuelve una coleccion con los roles del usuario
+                // Esto es de spatie/laravel-permission: getRoleNames() devuelve una coleccion con los roles del usuario
                 'roles' => $request->user()?->getRoleNames() ?? [],
-                //getAllPermissions() devuelve una coleccion con los permisos del usuario
+                // getAllPermissions() devuelve una coleccion con los permisos del usuario
                 // pluck('name') devuelve un array de string con los nombres de los permisos
                 'permissions' => $request->user()?->getAllPermissions()->pluck('name') ?? [],
             ],
@@ -62,7 +62,7 @@ class HandleInertiaRequests extends Middleware
                 'error' => $request->session()->get('error'),
                 'warning' => $request->session()->get('warning'),
                 'info' => $request->session()->get('info'),
-            ]
+            ],
         ];
     }
 }

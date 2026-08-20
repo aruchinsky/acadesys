@@ -34,10 +34,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
 
     return (
         <div className="px-4 py-6">
-            <Heading
-                title="Configuración"
-                description="Administrá tu perfil y la configuración de tu cuenta"
-            />
+            <Heading title="Configuración" description="Administrá tu perfil y la configuración de tu cuenta" />
 
             <div className="flex flex-col lg:flex-row lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">

@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Hash;
+use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
@@ -67,7 +67,6 @@ class UserController extends Controller
         return redirect()->route('usuarios.index')->with('success', 'Usuario creado correctamente.');
     }
 
-
     /**
      * Mostrar detalles de usuario.
      */
@@ -105,8 +104,6 @@ class UserController extends Controller
         ]);
     }
 
-
-
     /**
      * Mostrar formulario de edición.
      */
@@ -129,8 +126,8 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'nombre' => ['required', 'string', 'max:255'],
             'apellido' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users,email,' . $usuario->id],
-            'dni' => ['required', 'string', 'max:15', 'unique:users,dni,' . $usuario->id],
+            'email' => ['required', 'email', 'unique:users,email,'.$usuario->id],
+            'dni' => ['required', 'string', 'max:15', 'unique:users,dni,'.$usuario->id],
             'telefono' => ['nullable', 'string', 'max:20'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'string', 'exists:roles,name'],
@@ -152,7 +149,6 @@ class UserController extends Controller
 
         return redirect()->route('usuarios.index')->with('success', 'Usuario actualizado correctamente.');
     }
-
 
     /**
      * Eliminar usuario.

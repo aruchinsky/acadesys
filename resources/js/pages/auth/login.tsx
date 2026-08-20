@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
 import { Form, Head, router } from '@inertiajs/react';
-import { LoaderCircle, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
 
 interface LoginProps {
@@ -22,18 +22,10 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     };
 
     return (
-        <AuthLayout
-            title="Iniciar sesión"
-            description="Ingresá tu correo y contraseña para acceder al sistema."
-        >
+        <AuthLayout title="Iniciar sesión" description="Ingresá tu correo y contraseña para acceder al sistema.">
             <Head title="Login" />
 
-            <Form
-                method="post"
-                action={route('login')}
-                resetOnSuccess={['password']}
-                className="flex flex-col gap-6"
-            >
+            <Form method="post" action={route('login')} resetOnSuccess={['password']} className="flex flex-col gap-6">
                 {({ processing, errors }) => (
                     <>
                         <div className="grid gap-6">
@@ -58,11 +50,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                 <div className="flex items-center">
                                     <Label htmlFor="password">Contraseña</Label>
                                     {canResetPassword && (
-                                        <TextLink
-                                            href={route('password.request')}
-                                            className="ml-auto text-sm"
-                                            tabIndex={5}
-                                        >
+                                        <TextLink href={route('password.request')} className="ml-auto text-sm" tabIndex={5}>
                                             ¿Olvidaste tu contraseña?
                                         </TextLink>
                                     )}
@@ -81,14 +69,10 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                                     <button
                                         type="button"
                                         onClick={togglePasswordVisibility}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                                         tabIndex={-1}
                                     >
-                                        {showPassword ? (
-                                            <EyeOff className="h-5 w-5" />
-                                        ) : (
-                                            <Eye className="h-5 w-5" />
-                                        )}
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                     </button>
                                 </div>
 
@@ -102,15 +86,8 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             </div>
 
                             {/* Botón de login */}
-                            <Button
-                                type="submit"
-                                className="mt-4 w-full"
-                                tabIndex={4}
-                                disabled={processing}
-                            >
-                                {processing && (
-                                    <LoaderCircle className="h-4 w-4 animate-spin" />
-                                )}
+                            <Button type="submit" className="mt-4 w-full" tabIndex={4} disabled={processing}>
+                                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                                 Ingresar
                             </Button>
 
@@ -118,7 +95,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             <Button
                                 type="button"
                                 variant="outline"
-                                className="mt-2 w-full flex items-center justify-center gap-2"
+                                className="mt-2 flex w-full items-center justify-center gap-2"
                                 onClick={() => router.visit(route('home'))}
                             >
                                 <ArrowLeft className="h-4 w-4" />
@@ -127,30 +104,21 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                         </div>
 
                         {/* Enlace para registrarse (deshabilitado) */}
-                        <div className="text-center text-sm text-muted-foreground mt-4">
+                        <div className="mt-4 text-center text-sm text-muted-foreground">
                             ¿No tenés una cuenta?{' '}
-                            <button
-                                type="button"
-                                disabled
-                                className="cursor-not-allowed text-primary/60 underline relative group"
-                            >
+                            <button type="button" disabled className="group relative cursor-not-allowed text-primary/60 underline">
                                 Registrate
                                 {/* Tooltip Próximamente */}
-                                <span className="absolute left-1/2 top-full -translate-x-1/2 mt-1 rounded-md bg-primary px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 transition">
+                                <span className="absolute top-full left-1/2 mt-1 -translate-x-1/2 rounded-md bg-primary px-2 py-1 text-xs text-white opacity-0 transition group-hover:opacity-100">
                                     Próximamente
                                 </span>
                             </button>
                         </div>
-
                     </>
                 )}
             </Form>
 
-            {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
+            {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
         </AuthLayout>
     );
 }

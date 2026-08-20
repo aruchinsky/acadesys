@@ -19,10 +19,9 @@ class Curso extends Model
         'activo',
     ];
 
-
     protected $casts = [
         'fecha_inicio' => 'date',
-        'fecha_fin' => 'date'
+        'fecha_fin' => 'date',
     ];
 
     /**
@@ -31,8 +30,8 @@ class Curso extends Model
     public function usuarios()
     {
         return $this->belongsToMany(User::class, 'inscripciones', 'curso_id', 'user_id')
-                    ->withPivot(['estado', 'fecha_inscripcion', 'origen'])
-                    ->withTimestamps();
+            ->withPivot(['estado', 'fecha_inscripcion', 'origen'])
+            ->withTimestamps();
     }
 
     /**
@@ -51,21 +50,22 @@ class Curso extends Model
         return $this->hasMany(CursoHorario::class, 'curso_id');
     }
 
-
     /**
      * Profesores asignados al curso
      */
     public function profesores()
     {
         return $this->belongsToMany(User::class, 'curso_profesor', 'curso_id', 'profesor_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
-    public function scopeActivos($query) {
+    public function scopeActivos($query)
+    {
         return $query->where('activo', true);
     }
 
-    public function scopePorModalidad($query, $modalidad) {
+    public function scopePorModalidad($query, $modalidad)
+    {
         return $query->where('modalidad', $modalidad);
     }
 
@@ -73,7 +73,4 @@ class Curso extends Model
     {
         return $this->inscripciones()->count();
     }
-
-
-
 }

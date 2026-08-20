@@ -1,17 +1,16 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-
+use App\Http\Controllers\AsistenciaController;
+use App\Http\Controllers\CursoController;
 // Controladores
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\CursoController;
 use App\Http\Controllers\InscripcionController;
 use App\Http\Controllers\PagoController;
-use App\Http\Controllers\AsistenciaController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserRoleController;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 // ============================================================
 // 🏠 PÁGINA PRINCIPAL (PÚBLICA)
@@ -20,7 +19,6 @@ use App\Http\Controllers\UserRoleController;
 Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
-
 
 // ============================================================
 // 🌐 CALLBACK DE MERCADOPAGO (PÚBLICO - SIN AUTH)
@@ -32,7 +30,6 @@ Route::get('/', function () {
 //
 Route::get('/alumno/pagos/mercadopago/callback', [PagoController::class, 'mercadoPagoCallback'])
     ->name('alumno.pagos.mercadopago.callback');
-
 
 // ============================================================
 // 🔐 ÁREA AUTENTICADA
@@ -62,8 +59,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->parameters(['inscripciones' => 'inscripcion'])
         ->middleware('role:superusuario|administrativo|profesor|alumno');
 
-
-
     // ============================================================
     // 👨‍🏫 ÁREA PROFESOR
     // ============================================================
@@ -87,7 +82,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/profesor/cursos/{curso}/asistencias', [AsistenciaController::class, 'historial'])
             ->name('profesor.asistencias.historial');
     });
-
 
     // ============================================================
     // 🎓 ÁREA ALUMNO
@@ -128,7 +122,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('alumno.pagos.store');
     });
 
-
     // ============================================================
     // 🗂️ ÁREA ADMINISTRATIVO
     // ============================================================
@@ -144,7 +137,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Historial por curso
         Route::get('/administrativo/asistencias/{curso}/historial', [AsistenciaController::class, 'historial'])
             ->name('administrativo.asistencias.historial');
-
 
         Route::post('/administrativo/pagos/{pago}/anular', [PagoController::class, 'anular'])
             ->name('administrativo.pagos.anular');
@@ -173,7 +165,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
-
 // ============================================================
 // ⚙️ ÁREA SUPERUSUARIO
 // ============================================================
@@ -188,11 +179,10 @@ Route::middleware(['auth', 'verified', 'role:superusuario'])->group(function () 
 
     Route::post('/superusuario/asistencias', [AsistenciaController::class, 'store'])
         ->name('superusuario.asistencias.store');
-        
+
     // Historial por curso
     Route::get('/superusuario/asistencias/{curso}/historial', [AsistenciaController::class, 'historial'])
         ->name('superusuario.asistencias.historial');
-
 
     Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
     Route::get('/roles/create', [RoleController::class, 'create'])->name('roles.create');
@@ -206,9 +196,8 @@ Route::middleware(['auth', 'verified', 'role:superusuario'])->group(function () 
 
 });
 
-
 // ============================================================
 // 🔧 CONFIGURACIONES Y AUTENTICACIÓN
 // ============================================================
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';

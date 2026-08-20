@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
-use App\Models\User;
+use App\Models\Asistencia;
 use App\Models\Curso;
 use App\Models\Inscripcion;
 use App\Models\Pago;
-use App\Models\Asistencia;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
@@ -42,24 +42,23 @@ class DashboardController extends Controller
     {
         $stats = [
             'cursosActivos' => Curso::where('activo', true)->count(),
-            'profesores'    => User::role('profesor')->count(),
-            'alumnos'       => User::role('alumno')->count(),
+            'profesores' => User::role('profesor')->count(),
+            'alumnos' => User::role('alumno')->count(),
             'inscripciones' => Inscripcion::count(),
 
             // 🔥 KPIs corregidos
-            'pagosTotales'  => Pago::where('anulado', false)->count(),
+            'pagosTotales' => Pago::where('anulado', false)->count(),
             'pagosAnulados' => Pago::where('anulado', true)->count(),
 
-            'ingresosMes'   => Pago::where('anulado', false)
-                                ->whereMonth('pagado_at', now()->month)
-                                ->sum('monto'),
+            'ingresosMes' => Pago::where('anulado', false)
+                ->whereMonth('pagado_at', now()->month)
+                ->sum('monto'),
 
-            'asistenciasMes'=> Asistencia::whereMonth('fecha', now()->month)->count(),
+            'asistenciasMes' => Asistencia::whereMonth('fecha', now()->month)->count(),
         ];
 
-
         return Inertia::render('Dashboards/AdminSistema', [
-            'user'  => $user,
+            'user' => $user,
             'stats' => $stats,
         ]);
     }
@@ -81,11 +80,10 @@ class DashboardController extends Controller
         ];
 
         return Inertia::render('Dashboards/Administrativo', [
-            'user'  => $user,
+            'user' => $user,
             'stats' => $stats,
         ]);
     }
-
 
     /**
      * 🎓 Dashboard Profesor
@@ -101,23 +99,21 @@ class DashboardController extends Controller
         $totalAlumnos = $cursos->sum('inscripciones_count');
 
         // Última asistencia registrada por el profesor
-        $ultimaAsistencia = Asistencia::whereHas('inscripcion.curso.profesores', fn($q) =>
-            $q->where('users.id', $user->id)
+        $ultimaAsistencia = Asistencia::whereHas('inscripcion.curso.profesores', fn ($q) => $q->where('users.id', $user->id)
         )
-        ->latest('fecha')
-        ->value('fecha');
+            ->latest('fecha')
+            ->value('fecha');
 
         return Inertia::render('Dashboards/Profesor', [
-            'user'          => $user,
-            'cursos'        => $cursos,
+            'user' => $user,
+            'cursos' => $cursos,
             'stats' => [
                 'cursosAsignados' => $cursos->count(),
-                'alumnosActivos'  => $totalAlumnos,
-                'ultimaClase'     => $ultimaAsistencia ? $ultimaAsistencia : null,
-            ]
+                'alumnosActivos' => $totalAlumnos,
+                'ultimaClase' => $ultimaAsistencia ? $ultimaAsistencia : null,
+            ],
         ]);
     }
-
 
     /**
      * 🧑‍💻 Dashboard Alumno
@@ -131,15 +127,15 @@ class DashboardController extends Controller
             ->get();
 
         $stats = [
-            'totalCursos'  => $user->inscripciones()->count(),
+            'totalCursos' => $user->inscripciones()->count(),
             'pagosRealizados' => $user->pagos()->count(),
-            'asistencias'  => Asistencia::whereHas('inscripcion', fn($q) => $q->where('user_id', $user->id))->count(),
+            'asistencias' => Asistencia::whereHas('inscripcion', fn ($q) => $q->where('user_id', $user->id))->count(),
         ];
 
         return Inertia::render('Dashboards/Alumno', [
-            'user'          => $user,
+            'user' => $user,
             'inscripciones' => $inscripciones,
-            'stats'         => $stats,
+            'stats' => $stats,
         ]);
     }
 }

@@ -28,10 +28,7 @@ export default function Password() {
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall
-                        title="Actualizar contraseña"
-                        description="Asegurate de usar una contraseña segura y difícil de adivinar"
-                    />
+                    <HeadingSmall title="Actualizar contraseña" description="Asegurate de usar una contraseña segura y difícil de adivinar" />
 
                     <Form
                         method="put"
