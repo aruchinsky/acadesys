@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
+use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Faker\Factory as Faker;
-use App\Models\User;
 
 class AcadeSysExamSeeder extends Seeder
 {
@@ -49,7 +49,7 @@ class AcadeSysExamSeeder extends Seeder
                     'name' => "{$data['nombre']} {$data['apellido']}",
                     'dni' => $faker->unique()->numerify('########'),
                     'telefono' => $faker->phoneNumber(),
-                    'password' => Hash::make('password123')
+                    'password' => Hash::make('password123'),
                 ]
             );
 

@@ -1,6 +1,6 @@
 # 🎓 AcadeSys – Sistema de Gestión Académica
 
-**Versión:** 2025  
+**Baseline de reingeniería:** 19 de agosto de 2026
 **Stack:** Laravel 12 + Inertia + React 19 + Tailwind + ShadCN/UI  
 **Base de datos:** MySQL  
 **Arquitectura:** SPA (Single Page Application) con backend Laravel y frontend React integrados por Inertia.js
@@ -81,7 +81,7 @@ composer install
 
 ### 3️⃣ Instalar dependencias de Node
 ```bash
-npm install
+npm ci
 ```
 
 ### 4️⃣ Crear el archivo `.env`
@@ -119,7 +119,7 @@ php artisan key:generate
 ```bash
 php artisan migrate --seed
 ```
-> Esto creará las tablas y las cuentas de prueba listadas arriba.
+> Usar este comando solo sobre una base local nueva o verificada. Nunca usar `migrate:fresh`, `db:wipe` ni borrar una base con datos existentes.
 
 ### Crear el enlace para carpeta de imagenes
 ```bash
@@ -223,20 +223,16 @@ acadesys/
 
 | Problema | Solución sugerida |
 |-----------|------------------|
-| Migraciones fallan | Verificar credenciales de DB o ejecutar `php artisan migrate:fresh --seed` |
+| Migraciones fallan | Verificar credenciales, estado de la base y migraciones pendientes. No recrear una base con datos. |
 | Vite no conecta | Asegurarse de que `npm run dev` esté corriendo y puerto 5173 libre |
 | Inertia no refresca props | Limpiar caché con `php artisan optimize:clear` |
-| Error con roles | Ejecutar `php artisan db:seed --class=RoleSeeder` |
+| Error con roles | Verificar migraciones y ejecutar, solo en el entorno correcto, `php artisan db:seed --class=RolesAndPermissionsSeeder` |
 
 ---
 
 ## 🧩 Contribución
 
-1. Fork del repositorio  
-2. Crear una nueva rama: `git checkout -b feature/nueva-funcionalidad`  
-3. Realizar cambios y commit: `git commit -m "Descripción del cambio"`  
-4. Subir la rama: `git push origin feature/nueva-funcionalidad`  
-5. Crear un Pull Request
+La rama de integración es `develop`; `main` se reserva para versiones estables. Consultá `AGENTS.md` y `docs/ACADESYS_DEVELOPMENT_WORKFLOW.md` antes de modificar el proyecto.
 
 ---
 

@@ -40,5 +40,4 @@ return [
         'public_key' => env('MP_PUBLIC_KEY'),
     ],
 
-
 ];

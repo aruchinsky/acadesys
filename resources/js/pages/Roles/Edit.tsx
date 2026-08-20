@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
-import { pageProps, type BreadcrumbItem, type Role, type Permission } from '@/types';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { type BreadcrumbItem, type Permission, type Role } from '@/types';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -13,14 +13,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 interface EditProps {
-  role: Role;
-  permissions: Record<string, Permission[]>;
-  rolePermissions: string[];
+    role: Role;
+    permissions: Record<string, Permission[]>;
+    rolePermissions: string[];
 }
 
 export default function Edit({ role, permissions, rolePermissions }: EditProps) {
-
-    
     const { data, setData, put, processing, errors } = useForm({
         permissions: rolePermissions,
     });
@@ -28,10 +26,10 @@ export default function Edit({ role, permissions, rolePermissions }: EditProps) 
     const handleCheckboxChange = (permissionName: string, checked: boolean) => {
         if (checked) {
             setData('permissions', [...data.permissions, permissionName]);
-        }else{
+        } else {
             setData(
                 'permissions',
-                data.permissions.filter((p) => p !== permissionName)
+                data.permissions.filter((p) => p !== permissionName),
             );
         }
     };
@@ -64,9 +62,7 @@ export default function Edit({ role, permissions, rolePermissions }: EditProps) 
                             {/* Permisos */}
                             <div className="space-y-4">
                                 <h3 className="text-lg font-medium">Permisos</h3>
-                                <p className="text-sm text-muted-foreground">
-                                    Selecciona los permisos que tendrá este rol
-                                </p>
+                                <p className="text-sm text-muted-foreground">Selecciona los permisos que tendrá este rol</p>
 
                                 <div className="grid gap-6 md:grid-cols-2">
                                     {Object.entries(permissions).map(([entity, perms]) => (
@@ -74,21 +70,13 @@ export default function Edit({ role, permissions, rolePermissions }: EditProps) 
                                             <h4 className="font-semibold capitalize">{entity}</h4>
                                             <div className="space-y-2 rounded-lg border p-3">
                                                 {perms.map((permission) => (
-                                                    <div
-                                                        key={permission.id}
-                                                        className="flex items-center space-x-2"
-                                                    >
+                                                    <div key={permission.id} className="flex items-center space-x-2">
                                                         <Checkbox
                                                             id={`perm-${permission.id}`}
                                                             checked={data.permissions.includes(permission.name)}
-                                                            onCheckedChange={(checked) =>
-                                                                handleCheckboxChange(permission.name, !!checked)
-                                                            }
+                                                            onCheckedChange={(checked) => handleCheckboxChange(permission.name, !!checked)}
                                                         />
-                                                        <Label
-                                                            htmlFor={`perm-${permission.id}`}
-                                                            className="text-sm"
-                                                        >
+                                                        <Label htmlFor={`perm-${permission.id}`} className="text-sm">
                                                             {permission.name}
                                                         </Label>
                                                     </div>
@@ -97,9 +85,7 @@ export default function Edit({ role, permissions, rolePermissions }: EditProps) 
                                         </div>
                                     ))}
                                 </div>
-                                {errors.permissions && (
-                                    <p className="text-sm text-destructive">{errors.permissions}</p>
-                                )}
+                                {errors.permissions && <p className="text-sm text-destructive">{errors.permissions}</p>}
                             </div>
 
                             {/* Botones */}

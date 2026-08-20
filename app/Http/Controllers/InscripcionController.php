@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Inscripcion;
 use App\Models\Curso;
+use App\Models\Inscripcion;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -47,18 +47,18 @@ class InscripcionController extends Controller
 
         $validated = $request->validate([
             'curso_id' => 'required|exists:cursos,id',
-            'user_id'  => 'nullable|exists:users,id',
+            'user_id' => 'nullable|exists:users,id',
         ]);
 
         if ($user->hasRole('alumno')) {
             $validated['user_id'] = $user->id;
-            $validated['estado']  = 'pendiente';
-            $validated['origen']  = 'landing';
+            $validated['estado'] = 'pendiente';
+            $validated['origen'] = 'landing';
         } else {
             $validated['estado'] = 'confirmada';
             $validated['origen'] = 'admin';
 
-            if (!isset($validated['user_id'])) {
+            if (! isset($validated['user_id'])) {
                 return back()->with('error', 'Debe seleccionar un alumno.');
             }
         }

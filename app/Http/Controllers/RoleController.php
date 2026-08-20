@@ -14,9 +14,9 @@ class RoleController extends Controller
     {
         // Usamos withCount con alias para devolver 'permission_count' (coincide con tu index.d.ts)
         $roles = Role::withCount([
-                'permissions as permissions_count',
-                'users as users_count'
-            ])
+            'permissions as permissions_count',
+            'users as users_count',
+        ])
             ->orderBy('id', 'asc')
             ->get();
 
@@ -49,14 +49,13 @@ class RoleController extends Controller
             'guard_name' => 'web',
         ]);
 
-
-        if(!empty($validated['permissions'])) {
+        if (! empty($validated['permissions'])) {
             $role->syncPermissions($validated['permissions']);
         }
 
         return redirect()
-                ->route('roles.index')
-                ->with('success', 'Rol creado correctamente.');
+            ->route('roles.index')
+            ->with('success', 'Rol creado correctamente.');
     }
 
     // Ingresa a ese rol
@@ -74,7 +73,7 @@ class RoleController extends Controller
             'rolePermissions' => $rolePermissions,
         ]);
     }
-    
+
     // Actualiza el rol
     public function update(Request $request, Role $role)
     {
@@ -85,7 +84,7 @@ class RoleController extends Controller
         $role->syncPermissions($validated['permissions'] ?? []);
 
         return redirect()
-                ->route('roles.index')
-                ->with('success', 'Rol actualizado correctamente.');
+            ->route('roles.index')
+            ->with('success', 'Rol actualizado correctamente.');
     }
 }

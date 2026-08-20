@@ -1,7 +1,7 @@
 import { Form, Head, router } from '@inertiajs/react';
-import { LoaderCircle, Eye, EyeOff, ArrowLeft } from 'lucide-react';
-import { useState } from 'react';
 import { passwordStrength } from 'check-password-strength';
+import { ArrowLeft, Eye, EyeOff, LoaderCircle } from 'lucide-react';
+import { useState } from 'react';
 
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
@@ -16,8 +16,7 @@ export default function Register() {
     const [strength, setStrength] = useState<string>(''); // Too weak, Weak, Medium, Strong
 
     const togglePasswordVisibility = () => setShowPassword(!showPassword);
-    const toggleConfirmPasswordVisibility = () =>
-        setShowConfirmPassword(!showConfirmPassword);
+    const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
 
     const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -57,10 +56,7 @@ export default function Register() {
     };
 
     return (
-        <AuthLayout
-            title="Crear una cuenta"
-            description="Completá tus datos para registrarte en el sistema."
-        >
+        <AuthLayout title="Crear una cuenta" description="Completá tus datos para registrarte en el sistema.">
             <Head title="Registro" />
             <Form
                 method="post"
@@ -120,23 +116,19 @@ export default function Register() {
                                     <button
                                         type="button"
                                         onClick={togglePasswordVisibility}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                                         tabIndex={-1}
                                         aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                                     >
-                                        {showPassword ? (
-                                            <EyeOff className="h-5 w-5" />
-                                        ) : (
-                                            <Eye className="h-5 w-5" />
-                                        )}
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                     </button>
                                 </div>
 
                                 {/* Indicador de fuerza */}
-                                { /* Muestra la barra solo si hay algo escrito */ }
+                                {/* Muestra la barra solo si hay algo escrito */}
                                 {strength !== '' && (
                                     <div className="mt-2">
-                                        <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                                        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
                                             <div
                                                 className={`${getStrengthColor(strength)} h-2 rounded-full transition-all`}
                                                 style={{
@@ -145,16 +137,14 @@ export default function Register() {
                                                         strength === 'Too weak'
                                                             ? '20%'
                                                             : strength === 'Weak'
-                                                            ? '45%'
-                                                            : strength === 'Medium'
-                                                            ? '70%'
-                                                            : '100%',
+                                                              ? '45%'
+                                                              : strength === 'Medium'
+                                                                ? '70%'
+                                                                : '100%',
                                                 }}
                                             />
                                         </div>
-                                        <p className="text-sm mt-1 text-gray-600 dark:text-gray-300">
-                                            {getStrengthLabel(strength)}
-                                        </p>
+                                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{getStrengthLabel(strength)}</p>
                                     </div>
                                 )}
 
@@ -163,9 +153,7 @@ export default function Register() {
 
                             {/* Confirmación */}
                             <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
-                                    Confirmar contraseña
-                                </Label>
+                                <Label htmlFor="password_confirmation">Confirmar contraseña</Label>
                                 <div className="relative">
                                     <Input
                                         id="password_confirmation"
@@ -179,15 +167,11 @@ export default function Register() {
                                     <button
                                         type="button"
                                         onClick={toggleConfirmPasswordVisibility}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                                         tabIndex={-1}
                                         aria-label={showConfirmPassword ? 'Ocultar confirmación' : 'Mostrar confirmación'}
                                     >
-                                        {showConfirmPassword ? (
-                                            <EyeOff className="h-5 w-5" />
-                                        ) : (
-                                            <Eye className="h-5 w-5" />
-                                        )}
+                                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                     </button>
                                 </div>
                                 <InputError message={errors.password_confirmation} />
@@ -195,9 +179,7 @@ export default function Register() {
 
                             {/* Botón de registro */}
                             <Button type="submit" className="mt-2 w-full" tabIndex={5} disabled={processing}>
-                                {processing && (
-                                    <LoaderCircle className="h-4 w-4 animate-spin" />
-                                )}
+                                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                                 Crear cuenta
                             </Button>
 
@@ -205,7 +187,7 @@ export default function Register() {
                             <Button
                                 type="button"
                                 variant="outline"
-                                className="w-full flex items-center justify-center gap-2"
+                                className="flex w-full items-center justify-center gap-2"
                                 onClick={() => router.visit(route('home'))}
                             >
                                 <ArrowLeft className="h-4 w-4" />

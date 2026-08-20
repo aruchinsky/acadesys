@@ -15,7 +15,7 @@ class CursoHorario extends Model
         'hora_inicio',
         'duracion_min',
         'sala',
-        'turno'
+        'turno',
     ];
 
     protected $casts = [];

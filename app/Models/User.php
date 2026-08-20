@@ -7,16 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
-use App\Models\Inscripcion;
-use App\Models\Pago;
-use App\Models\Curso;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    
+
     // UN TRAIT ES DE PHP NATIVO Y PERMITE REUTILIZAR CODIGO EN DIFERENTES CLASES
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, HasRoles, Notifiable;
 
     protected $guard_name = 'web';
 
@@ -36,7 +33,6 @@ class User extends Authenticatable
     ];
 
     protected $appends = ['nombre_completo'];
-
 
     /**
      * The attributes that should be hidden for serialization.
@@ -91,8 +87,8 @@ class User extends Authenticatable
     public function cursos()
     {
         return $this->belongsToMany(Curso::class, 'inscripciones')
-                    ->withPivot(['estado', 'fecha_inscripcion', 'origen'])
-                    ->withTimestamps();
+            ->withPivot(['estado', 'fecha_inscripcion', 'origen'])
+            ->withTimestamps();
     }
 
     /**
@@ -101,10 +97,8 @@ class User extends Authenticatable
     public function cursosDictados()
     {
         return $this->belongsToMany(Curso::class, 'curso_profesor', 'profesor_id', 'curso_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
-
-
 
     /**
      * Devuelve el nombre completo del usuario
@@ -113,8 +107,4 @@ class User extends Authenticatable
     {
         return trim("{$this->nombre} {$this->apellido}");
     }
-
-
-
-
 }

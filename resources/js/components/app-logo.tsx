@@ -5,7 +5,7 @@ export default function AppLogo() {
             <img
                 src="/acadesys_logo.png"
                 alt="AcadeSys Logo"
-                className="w-full h-full object-contain" // ocupa todo el bloque sin deformarse
+                className="h-full w-full object-contain" // ocupa todo el bloque sin deformarse
             />
         </div>
     );

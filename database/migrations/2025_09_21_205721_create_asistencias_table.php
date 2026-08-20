@@ -22,9 +22,9 @@ return new class extends Migration
             $table->unique(['inscripcion_id', 'fecha'], 'uq_asistencia');
 
             $table->foreign('inscripcion_id')
-                  ->references('id')
-                  ->on('inscripciones')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('inscripciones')
+                ->onDelete('cascade');
         });
     }
 

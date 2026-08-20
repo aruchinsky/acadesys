@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Asistencia;
+use App\Models\Curso;
 use App\Models\Inscripcion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use App\Models\Curso;
 
 class AsistenciaController extends Controller
 {
@@ -34,17 +34,16 @@ class AsistenciaController extends Controller
     public function administrativoIndex()
     {
         $cursos = Curso::with([
-            'inscripciones.usuario:id,nombre,apellido,dni'
+            'inscripciones.usuario:id,nombre,apellido,dni',
         ])
-        ->orderBy('nombre')
-        ->get();
+            ->orderBy('nombre')
+            ->get();
 
         return Inertia::render('Asistencias/AdministrativoAsistencia', [
-            'cursos'   => $cursos,
+            'cursos' => $cursos,
             'fechaHoy' => now()->toDateString(),
         ]);
     }
-
 
     /**
      * 🛠️ Vista de asistencias para SUPERUSUARIO
@@ -53,18 +52,16 @@ class AsistenciaController extends Controller
     public function superusuarioIndex()
     {
         $cursos = Curso::with([
-            'inscripciones.usuario:id,nombre,apellido,dni'
+            'inscripciones.usuario:id,nombre,apellido,dni',
         ])
-        ->orderBy('nombre')
-        ->get();
+            ->orderBy('nombre')
+            ->get();
 
         return Inertia::render('Asistencias/SuperusuarioAsistencia', [
-            'cursos'   => $cursos,
+            'cursos' => $cursos,
             'fechaHoy' => now()->toDateString(),
         ]);
     }
-
-
 
     public function create()
     {
@@ -76,8 +73,8 @@ class AsistenciaController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'curso_id'   => 'required|exists:cursos,id',
-            'fecha'      => 'required|date',
+            'curso_id' => 'required|exists:cursos,id',
+            'fecha' => 'required|date',
             'asistencias' => 'required|array',
         ]);
 
@@ -96,7 +93,7 @@ class AsistenciaController extends Controller
                     'fecha' => $fecha,
                 ],
                 [
-                    'presente' => (bool)($data['presente'] ?? false),
+                    'presente' => (bool) ($data['presente'] ?? false),
                     'observacion' => $data['observacion'] ?? null,
                 ]
             );
@@ -104,8 +101,6 @@ class AsistenciaController extends Controller
 
         return redirect()->back()->with('success', 'Asistencias registradas correctamente.');
     }
-
-
 
     public function destroy(Asistencia $asistencia)
     {
@@ -122,7 +117,7 @@ class AsistenciaController extends Controller
 
         $curso = Curso::with([
             'inscripciones.usuario:id,nombre,apellido,dni',
-            'inscripciones.asistencias' => fn($q) => $q->orderBy('fecha', 'asc')
+            'inscripciones.asistencias' => fn ($q) => $q->orderBy('fecha', 'asc'),
         ])->findOrFail($cursoId);
 
         $fechas = Asistencia::whereIn('inscripcion_id', $curso->inscripciones->pluck('id'))
@@ -137,7 +132,6 @@ class AsistenciaController extends Controller
         ]);
     }
 
-
     public function alumnoIndex()
     {
         $user = Auth::user();
@@ -147,15 +141,13 @@ class AsistenciaController extends Controller
             ->where('estado', 'confirmada')
             ->with([
                 'curso:id,nombre,fecha_inicio,fecha_fin',
-                'asistencias' => fn($q) => $q->orderBy('fecha', 'asc')
+                'asistencias' => fn ($q) => $q->orderBy('fecha', 'asc'),
             ])
             ->orderBy('created_at', 'desc')
             ->get();
 
         return Inertia::render('Asistencias/AlumnoAsistencia', [
-            'inscripciones' => $inscripciones
+            'inscripciones' => $inscripciones,
         ]);
     }
-
-
 }

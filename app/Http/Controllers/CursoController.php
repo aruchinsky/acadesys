@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Curso;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class CursoController extends Controller
 {
@@ -21,13 +21,12 @@ class CursoController extends Controller
         ]);
     }
 
-
     public function show(Curso $curso)
     {
         $curso->load([
             'profesores:id,nombre,apellido',
             'horarios',
-            'inscripciones.usuario:id,nombre,apellido'
+            'inscripciones.usuario:id,nombre,apellido',
         ]);
 
         return Inertia::render('Cursos/Show', ['curso' => $curso]);
@@ -45,32 +44,32 @@ class CursoController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nombre'        => 'required|string|max:150',
-            'descripcion'   => 'nullable|string',
-            'fecha_inicio'  => 'nullable|date',
-            'fecha_fin'     => 'nullable|date|after_or_equal:fecha_inicio',
-            'arancel_base'  => 'nullable|numeric|min:0',
-            'modalidad'     => 'required|in:Presencial,Virtual',
-            'activo'        => 'boolean',
-            'profesores'    => 'array',
-            'profesores.*'  => 'exists:users,id',
-            'horarios'      => 'array',
+            'nombre' => 'required|string|max:150',
+            'descripcion' => 'nullable|string',
+            'fecha_inicio' => 'nullable|date',
+            'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
+            'arancel_base' => 'nullable|numeric|min:0',
+            'modalidad' => 'required|in:Presencial,Virtual',
+            'activo' => 'boolean',
+            'profesores' => 'array',
+            'profesores.*' => 'exists:users,id',
+            'horarios' => 'array',
             'horarios.*.dia_en_texto' => 'nullable|string|max:20',
-            'horarios.*.hora_inicio'  => 'nullable|string|max:10',
+            'horarios.*.hora_inicio' => 'nullable|string|max:10',
             'horarios.*.duracion_min' => 'nullable|integer|min:0',
-            'horarios.*.sala'         => 'nullable|string|max:50',
-            'horarios.*.turno'        => 'nullable|string|max:20',
+            'horarios.*.sala' => 'nullable|string|max:50',
+            'horarios.*.turno' => 'nullable|string|max:20',
         ]);
 
         $curso = Curso::create($validated);
 
         // Asignar profesores
-        if (!empty($validated['profesores'])) {
+        if (! empty($validated['profesores'])) {
             $curso->profesores()->sync($validated['profesores']);
         }
 
         // Crear horarios
-        if (!empty($validated['horarios'])) {
+        if (! empty($validated['horarios'])) {
             foreach ($validated['horarios'] as $horario) {
                 $curso->horarios()->create($horario);
             }
@@ -91,21 +90,21 @@ class CursoController extends Controller
     public function update(Request $request, Curso $curso)
     {
         $validated = $request->validate([
-            'nombre'        => 'required|string|max:150',
-            'descripcion'   => 'nullable|string',
-            'fecha_inicio'  => 'nullable|date',
-            'fecha_fin'     => 'nullable|date|after_or_equal:fecha_inicio',
-            'arancel_base'  => 'nullable|numeric|min:0',
-            'modalidad'     => 'required|in:Presencial,Virtual',
-            'activo'        => 'boolean',
-            'profesores'    => 'array',
-            'profesores.*'  => 'exists:users,id',
-            'horarios'      => 'array',
+            'nombre' => 'required|string|max:150',
+            'descripcion' => 'nullable|string',
+            'fecha_inicio' => 'nullable|date',
+            'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
+            'arancel_base' => 'nullable|numeric|min:0',
+            'modalidad' => 'required|in:Presencial,Virtual',
+            'activo' => 'boolean',
+            'profesores' => 'array',
+            'profesores.*' => 'exists:users,id',
+            'horarios' => 'array',
             'horarios.*.dia_en_texto' => 'nullable|string|max:20',
-            'horarios.*.hora_inicio'  => 'nullable|string|max:10',
+            'horarios.*.hora_inicio' => 'nullable|string|max:10',
             'horarios.*.duracion_min' => 'nullable|integer|min:0',
-            'horarios.*.sala'         => 'nullable|string|max:50',
-            'horarios.*.turno'        => 'nullable|string|max:20',
+            'horarios.*.sala' => 'nullable|string|max:50',
+            'horarios.*.turno' => 'nullable|string|max:20',
         ]);
 
         $curso->update($validated);
@@ -115,7 +114,7 @@ class CursoController extends Controller
 
         // Actualizar horarios (eliminamos los viejos y guardamos los nuevos)
         $curso->horarios()->delete();
-        if (!empty($validated['horarios'])) {
+        if (! empty($validated['horarios'])) {
             foreach ($validated['horarios'] as $horario) {
                 $curso->horarios()->create($horario);
             }
@@ -176,8 +175,8 @@ class CursoController extends Controller
                 'horarios:id,curso_id,dia_en_texto,hora_inicio,duracion_min,sala,turno',
                 // Trae solo la inscripción del alumno logueado
                 'inscripciones' => function ($q) use ($user) {
-                    $q->select('id','user_id','curso_id','estado','fecha_inscripcion','origen')
-                    ->where('user_id', $user->id);
+                    $q->select('id', 'user_id', 'curso_id', 'estado', 'fecha_inscripcion', 'origen')
+                        ->where('user_id', $user->id);
                 },
             ])
             ->withCount('inscripciones')
@@ -197,21 +196,20 @@ class CursoController extends Controller
         $cursos = Curso::query()
             ->whereHas('inscripciones', function ($q) use ($user) {
                 $q->where('user_id', $user->id)
-                ->where('estado', 'confirmada');
+                    ->where('estado', 'confirmada');
             })
             ->with([
                 'profesores:id,nombre,apellido',
                 'horarios:id,curso_id,dia_en_texto,hora_inicio,duracion_min,sala,turno',
                 'inscripciones' => function ($q) use ($user) {
-                    $q->select('id','user_id','curso_id','estado','fecha_inscripcion','origen')
-                    ->where('user_id', $user->id)
-                    ->with(['asistencias:id,inscripcion_id,fecha,presente,observacion']);
+                    $q->select('id', 'user_id', 'curso_id', 'estado', 'fecha_inscripcion', 'origen')
+                        ->where('user_id', $user->id)
+                        ->with(['asistencias:id,inscripcion_id,fecha,presente,observacion']);
                 },
             ])
             ->withCount('inscripciones')
-            ->orderBy('fecha_inicio','asc')
+            ->orderBy('fecha_inicio', 'asc')
             ->get();
-
 
         return Inertia::render('Cursos/AlumnoMisCursos', [
             'cursos' => $cursos,
@@ -227,9 +225,9 @@ class CursoController extends Controller
             'horarios:id,curso_id,dia_en_texto,hora_inicio,duracion_min,sala,turno',
             // Trae SOLO la inscripción del alumno + asistencias para historial propio
             'inscripciones' => function ($q) use ($user) {
-                $q->select('id','user_id','curso_id','estado','fecha_inscripcion','origen')
-                ->where('user_id', $user->id)
-                ->with(['asistencias:id,inscripcion_id,fecha,presente,observacion']);
+                $q->select('id', 'user_id', 'curso_id', 'estado', 'fecha_inscripcion', 'origen')
+                    ->where('user_id', $user->id)
+                    ->with(['asistencias:id,inscripcion_id,fecha,presente,observacion']);
             },
         ]);
 
@@ -237,10 +235,8 @@ class CursoController extends Controller
         $miInscripcion = $curso->inscripciones->first();
 
         return Inertia::render('Cursos/AlumnoShow', [
-            'curso'         => $curso,
+            'curso' => $curso,
             'miInscripcion' => $miInscripcion,
         ]);
     }
-
-
 }

@@ -57,7 +57,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'ver cursos',
                 'ver inscripciones',
                 'crear asistencias', 'ver asistencias', 'editar asistencias',
-                'ver reportes'
+                'ver reportes',
             ],
 
             'alumno' => [
@@ -65,7 +65,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'ver cursos', 'preinscribirse cursos',
                 'ver inscripciones',
                 'ver asistencias',
-                'ver pagos'
+                'ver pagos',
             ],
         ];
 
